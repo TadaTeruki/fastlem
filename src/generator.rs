@@ -2,26 +2,27 @@ use delaunator::{triangulate, Point};
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
 use crate::{
+    drainage_basin::DrainageBasin,
     model::TerrainModel,
-    terrain::Terrain,
     stream_tree,
+    terrain::Terrain,
     units::{Altitude, Erodibility, Length, UpliftRate, Year},
 };
 
 /// Provides methods for generating terrain.
-/// 
+///
 /// ### Required parameters
 ///  - `model`: the set of sites.
 ///  - `uplift_rates`: the uplift rates of sites.
 ///  - `erodibilities`: the erodibilities of sites. The value of erodibility depends on many factors, such as the lithology, vegetation, climate, and climate variability.
-///  - `m_exp` and `n_exp` is the constants for calculating stream power. 
+///  - `m_exp` and `n_exp` is the constants for calculating stream power.
 ///
 /// ### Optional parameters
 ///  - `base_altitudes`: the base altitudes of sites. If `None`, the base altitudes will be set to zero.
 ///  - `custom_outlets`: he custom outlets of sites. If `None`, the outlets will be computed from the convex hull of the sites.
 ///  - `year_step` is the time step of each iteration.
 ///  - `max_year` is the maximum time of the iteration. If `None`, the iteration will not stop until the altitudes of all sites are stable.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct TerrainGenerator {
     model: Option<TerrainModel>,
     base_altitudes: Option<Vec<Altitude>>,
@@ -35,10 +36,6 @@ pub struct TerrainGenerator {
 }
 
 impl TerrainGenerator {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Set the model that contains the set of sites.
     pub fn set_model(mut self, model: TerrainModel) -> Self {
         self.model = Some(model);
@@ -179,12 +176,12 @@ impl TerrainGenerator {
 
         let triangulation = {
             let points: Vec<Point> = sites
-            .iter()
-            .map(|site| Point {
-                x: site.x,
-                y: site.y,
-            })
-            .collect();
+                .iter()
+                .map(|site| Point {
+                    x: site.x,
+                    y: site.y,
+                })
+                .collect();
             triangulate(&points)
         };
 
@@ -197,37 +194,25 @@ impl TerrainGenerator {
         };
 
         let graph: EdgeAttributedUndirectedGraph<Length> = {
-            let mut graph = EdgeAttributedUndirectedGraph::new(sites.len());
+            let mut graph: EdgeAttributedUndirectedGraph<f64> =
+                EdgeAttributedUndirectedGraph::new(sites.len());
             for triangle in triangulation.triangles.chunks_exact(3) {
                 let a = triangle[0];
                 let b = triangle[1];
                 let c = triangle[2];
 
                 if a < b {
-                    graph.add_edge(
-                        a,
-                        b,
-                        sites[a].distance(&sites[b]),
-                    );
+                    graph.add_edge(a, b, sites[a].distance(&sites[b]));
                 }
                 if b < c {
-                    graph.add_edge(
-                        b,
-                        c,
-                        sites[b].distance(&sites[c]),
-                    );
+                    graph.add_edge(b, c, sites[b].distance(&sites[c]));
                 }
                 if c < a {
-                    graph.add_edge(
-                        c,
-                        a,
-                        sites[c].distance(&sites[a]),
-                    );
+                    graph.add_edge(c, a, sites[c].distance(&sites[a]));
                 }
             }
             graph
         };
-
 
         let is_outlet = {
             let mut is_outlet = vec![false; sites.len()];
@@ -237,40 +222,69 @@ impl TerrainGenerator {
             is_outlet
         };
 
-        let altitudes_: Vec<Altitude> = {
+        let altitudes: Vec<Altitude> = {
             let mut altitudes = base_altitudes;
             let mut year = 0.0;
             loop {
                 let stream_tree =
                     stream_tree::StreamTree::build(&sites, &altitudes, &graph, &is_outlet);
-                // calculate drainage area
-                let drainage_areas = stream_tree.calculate_drainage_areas(&graph, &areas);
-                let response_times = stream_tree.calculate_response_times(
-                    &graph,
-                    &drainage_areas,
-                    &altitudes,
-                    &erodibilities,
-                    m_exp,
-                    n_exp,
-                );
-                // update altitudes
+
+                let mut drainage_areas = areas.clone();
+                let mut response_times = vec![0.0; sites.len()];
                 let mut changed = false;
-                for i in 0..altitudes.len() {
-                    let iroot = stream_tree.get_root(i);
-                    let new_altitude = altitudes[iroot]
-                        + uplift_rates[i] * (response_times[i] - response_times[iroot]);
-                    if !changed {
-                        changed |= new_altitude != altitudes[i];
-                    }
-                    altitudes[i] = new_altitude;
-                }
+
+                outlets.iter().for_each(|&outlet| {
+                    let drainage_basin = DrainageBasin::build(outlet, &stream_tree, &graph);
+                    // calculate drainage areas
+                    drainage_basin.for_each_downstream(|i| {
+                        let j = stream_tree.get_next(i);
+                        if j != i {
+                            drainage_areas[j] += drainage_areas[i];
+                        }
+                    });
+                    // calculate response times
+                    drainage_basin.for_each_upstream(|i| {
+                        let j = stream_tree.get_next(i);
+                        let distance: Length = {
+                            let (ok, edge) = graph.has_edge(i, j);
+                            if ok {
+                                edge.unwrap()
+                            } else {
+                                0.0
+                            }
+                        };
+                        let celerity = {
+                            let slope = {
+                                if i == j {
+                                    1.0
+                                } else {
+                                    (altitudes[j] - altitudes[i]) / distance
+                                }
+                            };
+                            erodibilities[i]
+                                * drainage_areas[i].powf(m_exp)
+                                * slope.powf(n_exp - 1.0)
+                        };
+                        response_times[i] += response_times[j] + 1.0 / celerity * distance;
+                    });
+
+                    // calculate altitudes
+                    drainage_basin.for_each_upstream(|i| {
+                        let new_altitude = altitudes[outlet]
+                            + uplift_rates[i] * (response_times[i] - response_times[outlet]);
+                        if !changed {
+                            changed |= new_altitude != altitudes[i];
+                        }
+                        altitudes[i] = new_altitude;
+                    });
+                });
                 year += year_step;
+
+                if !changed {
+                    break;
+                }
                 if let Some(max_year) = max_year {
                     if year > max_year {
-                        break;
-                    }
-                } else {
-                    if !changed {
                         break;
                     }
                 }
@@ -279,10 +293,6 @@ impl TerrainGenerator {
             altitudes
         };
 
-        Ok(Terrain::new(
-            sites.to_vec(),
-            altitudes_,
-        ))
+        Ok(Terrain::new(sites.to_vec(), altitudes))
     }
 }
-

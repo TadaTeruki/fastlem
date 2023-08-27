@@ -1,13 +1,13 @@
 use std::collections::BinaryHeap;
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
-use crate::units::{Altitude, Area, Erodibility, Length, ResponseTime, Site};
+use crate::units::{Altitude, Length, Site};
 
 /// Tree structure for representing the flow of water.
-///  - `flow_into` is the next site of each site in the flow.
-///  - `root` is the root of each site in the flow.
+///  - `next` is the next site of each site in the flow.
+///  - `root` is the root(outlet) of each site in the flow.
 pub struct StreamTree {
-    flow_into: Vec<usize>,
+    next: Vec<usize>,
     root: Vec<usize>,
 }
 
@@ -42,6 +42,32 @@ impl PartialOrd for RidgeElement {
     }
 }
 
+#[derive(PartialOrd)]
+struct StreamOriginElement {
+    index: usize,
+    stream_order: usize,
+}
+
+impl PartialEq for StreamOriginElement {
+    fn eq(&self, other: &Self) -> bool {
+        self.stream_order == other.stream_order
+    }
+}
+
+impl Eq for StreamOriginElement {}
+
+impl Ord for StreamOriginElement {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        if self.stream_order < other.stream_order {
+            std::cmp::Ordering::Greater
+        } else if self.stream_order > other.stream_order {
+            std::cmp::Ordering::Less
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+}
+
 impl StreamTree {
     pub fn build(
         sites: &Vec<Site>,
@@ -63,23 +89,17 @@ impl StreamTree {
             next[i] = i;
 
             let mut steepest_slope = 0.0;
-            graph
-                .neighbors_of(i)
-                .iter()
-                .enumerate()
-                .for_each(|(_, ja)| {
-                    let j = ja.0;
-                    if altitudes[i] <= altitudes[j] {
-                        return;
+            graph.neighbors_of(i).iter().for_each(|ja| {
+                let j = ja.0;
+                if altitudes[i] > altitudes[j] {
+                    let distance = ja.1;
+                    let down_hill_slope = (altitudes[i] - altitudes[j]) / distance as f64;
+                    if down_hill_slope > steepest_slope {
+                        steepest_slope = down_hill_slope;
+                        next[i] = j;
                     }
-                    if let Some(distance) = graph.has_edge(i, j).1 {
-                        let down_hill_slope = (altitudes[i] - altitudes[j]) / distance as f64;
-                        if down_hill_slope > steepest_slope {
-                            steepest_slope = down_hill_slope;
-                            next[i] = j;
-                        }
-                    }
-                });
+                }
+            });
         });
 
         // find roots
@@ -120,7 +140,7 @@ impl StreamTree {
         // if there are no lakes, stream tree is already complete
         if !has_lake {
             return StreamTree {
-                flow_into: next,
+                next: next,
                 root: subroot,
             };
         }
@@ -144,6 +164,7 @@ impl StreamTree {
 
         // remove lakes
         let mut visited: Vec<bool> = vec![false; sites.len()];
+        let mut subaltitudes = altitudes.clone();
 
         loop {
             let element = {
@@ -166,7 +187,6 @@ impl StreamTree {
                 .for_each(|(_, ja)| {
                     let j = ja.0;
                     if visited[j] {
-                        root[i] = root[subroot[i]];
                         return;
                     }
 
@@ -177,6 +197,7 @@ impl StreamTree {
                             if next[k] != k {
                                 // flip flow
                                 let tmp = next[k];
+                                subaltitudes[k] = subaltitudes[i];
                                 next[k] = nk;
                                 nk = k;
                                 k = tmp;
@@ -185,91 +206,35 @@ impl StreamTree {
                             }
                         }
                         next[k] = nk;
+                        subaltitudes[k] = subaltitudes[i];
                         root[subroot[j]] = root[subroot[i]];
                     }
 
-                    root[i] = root[subroot[i]];
-                    if !visited[j] {
-                        ridgestack.push(RidgeElement {
-                            index: j,
-                            alt: altitudes[j],
-                        });
-                    }
+                    let distance = ja.1;
+                    ridgestack.push(RidgeElement {
+                        index: j,
+                        alt: (subaltitudes[j] - subaltitudes[i] + 1e9) * distance,
+                    });
                 });
+            root[i] = root[subroot[i]];
             visited[i] = true;
         }
 
+        // validate all roots are specified
+        for i in 0..sites.len() {
+            if root[i].is_none() {
+                panic!("Root of site {} is not specified", i);
+            }
+        }
+
         StreamTree {
-            flow_into: next,
+            next: next,
             root: root.iter().map(|&r| r.unwrap()).collect(),
         }
     }
 
-    pub fn calculate_drainage_areas(
-        &self,
-        graph: &EdgeAttributedUndirectedGraph<Length>,
-        areas: &Vec<Area>,
-    ) -> Vec<Area> {
-        let mut drainage_areas: Vec<Area> = vec![0.0; graph.order()];
-
-        self.root.iter().enumerate().for_each(|(i, _)| {
-            let mut iv = i;
-            loop {
-                drainage_areas[iv] += areas[i];
-                if self.flow_into[iv] == iv {
-                    break;
-                }
-                iv = self.flow_into[iv];
-            }
-        });
-
-        drainage_areas
-    }
-
-    pub fn calculate_response_times(
-        &self,
-        graph: &EdgeAttributedUndirectedGraph<Length>,
-        drainage_areas: &Vec<Area>,
-        altitudes: &Vec<Altitude>,
-        erodibilities: &Vec<Erodibility>,
-        m_exp: f64,
-        n_exp: f64,
-    ) -> Vec<ResponseTime> {
-        let celerities = altitudes
-            .iter()
-            .enumerate()
-            .map(|(i, _)| {
-                let j = self.get_flow_into(i);
-                let slope = {
-                    if i == j {
-                        1.0
-                    } else {
-                        let distance = graph.has_edge(i, j).1.unwrap();
-                        (altitudes[i] - altitudes[j]) / distance
-                    }
-                };
-                erodibilities[i] * drainage_areas[i].powf(m_exp) * slope.powf(n_exp - 1.0)
-            })
-            .collect::<Vec<_>>();
-
-        let mut response_times: Vec<ResponseTime> = vec![0.0; altitudes.len()];
-
-        self.root.iter().enumerate().for_each(|(i, _)| {
-            let mut iv = i;
-            loop {
-                response_times[i] += 1.0 / celerities[iv];
-                if self.flow_into[iv] == iv {
-                    break;
-                }
-                iv = self.flow_into[iv];
-            }
-        });
-
-        response_times
-    }
-
-    pub fn get_flow_into(&self, i: usize) -> usize {
-        self.flow_into[i]
+    pub fn get_next(&self, i: usize) -> usize {
+        self.next[i]
     }
 
     pub fn get_root(&self, i: usize) -> usize {

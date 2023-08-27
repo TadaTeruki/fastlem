@@ -6,7 +6,7 @@ use voronoice::{BoundingBox, VoronoiBuilder};
 use crate::units::{Area, Site};
 
 /// A set of sites.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct TerrainModel {
     sites: Option<Vec<Site>>,
     bound_min: Option<Site>,
