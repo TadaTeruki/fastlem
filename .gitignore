@@ -1,2 +1,10 @@
 /target
 /Cargo.lock
+/tmp
+.gitignore
+
+# for checking performance using FlameGraph (https://github.com/brendangregg/FlameGraph)
+*.png
+*.svg
+*.data
+*.data.*

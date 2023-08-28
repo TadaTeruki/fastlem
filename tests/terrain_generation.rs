@@ -20,31 +20,18 @@ fn test_terrain_generation() {
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
         .unwrap()
-        .iterate_sites(0)
+        .iterate_sites(1)
         .unwrap();
-
-    let min_x_index = model
-        .get_sites()
-        .unwrap()
-        .iter()
-        .enumerate()
-        .min_by(|(_, a), (_, b)| a.x.partial_cmp(&b.x).unwrap())
-        .unwrap()
-        .0;
 
     let terrain = terrain_rs::generator::TerrainGenerator::default()
         .set_model(model)
-        .set_base_altitudes(vec![0.0; num])
-        .set_uplift_rates(vec![1e-4; num])
-        .set_erodibilities(vec![1e-6; num])
-        .set_custom_outlets(vec![min_x_index])
-        .set_exponent_m(0.5)
-        .set_exponent_n(1.0)
+        .set_uplift_rate_func(Box::new(|_, _| 1e-2))
+        .set_erodibility_func(Box::new(|_, _| 1e-6))
         .generate()
         .unwrap();
 
-    let sites = terrain.get_sites();
-    let altitudes = terrain.get_altitudes();
+    let sites = terrain.sites;
+    let altitudes = terrain.altitudes;
 
     let image = terrain_visualizer::Visualizer::new(
         sites
@@ -62,7 +49,7 @@ fn test_terrain_generation() {
     .set_y_range(bound_min.y, bound_max.y);
 
     image
-        .render_image(Some(1000), None, |weight_rate: f64| {
+        .render_image(Some(500), None, |weight_rate: f64| {
             let c = (weight_rate * 220.0 + 30.0) as u8;
             image::Rgb([c, c, c])
         })

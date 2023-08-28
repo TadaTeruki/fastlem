@@ -6,33 +6,33 @@ use crate::{
     model::TerrainModel,
     stream_tree,
     terrain::Terrain,
-    units::{Altitude, Erodibility, Length, UpliftRate, Year},
+    units::{Altitude, Erodibility, Length, Site, UpliftRate, Year},
 };
+
+const DEFAULT_M_EXP: f64 = 0.5;
 
 /// Provides methods for generating terrain.
 ///
 /// ### Required parameters
 ///  - `model`: the set of sites.
-///  - `uplift_rates`: the uplift rates of sites.
-///  - `erodibilities`: the erodibilities of sites. The value of erodibility depends on many factors, such as the lithology, vegetation, climate, and climate variability.
-///  - `m_exp` and `n_exp` is the constants for calculating stream power.
-///
+///  - `uplift_rate_func`: the function that calculates uplift rates.
+///  - `erodibility_func`: the function that calculates erodibilities.
 /// ### Optional parameters
 ///  - `base_altitudes`: the base altitudes of sites. If `None`, the base altitudes will be set to zero.
 ///  - `custom_outlets`: he custom outlets of sites. If `None`, the outlets will be computed from the convex hull of the sites.
 ///  - `year_step` is the time step of each iteration.
 ///  - `max_year` is the maximum time of the iteration. If `None`, the iteration will not stop until the altitudes of all sites are stable.
-#[derive(Default, Clone)]
+///  - `m_exp` is the constants for calculating stream power. If `None`, the default value is 0.5.
+#[derive(Default)]
 pub struct TerrainGenerator {
     model: Option<TerrainModel>,
     base_altitudes: Option<Vec<Altitude>>,
-    uplift_rates: Option<Vec<UpliftRate>>,
-    erodibilities: Option<Vec<Erodibility>>,
+    uplift_rate_func: Option<Box<dyn Fn(Year, Site) -> UpliftRate>>,
+    erodibility_func: Option<Box<dyn Fn(Year, Site) -> Erodibility>>,
     custom_outlets: Option<Vec<usize>>,
     year_step: Option<Year>,
     max_year: Option<Year>,
     m_exp: Option<f64>,
-    n_exp: Option<f64>,
 }
 
 impl TerrainGenerator {
@@ -48,15 +48,41 @@ impl TerrainGenerator {
         self
     }
 
-    /// Set the uplift rates of sites.
-    pub fn set_uplift_rates(mut self, uplift_rates: Vec<UpliftRate>) -> Self {
-        self.uplift_rates = Some(uplift_rates);
+    /// Set the base altitudes of sites by function.
+    pub fn set_base_altitude_by_func(
+        mut self,
+        base_altitude: impl Fn(Site) -> Altitude,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
+        let base_altitudes = {
+            if let Some(model) = &self.model {
+                let sites = model.get_sites().unwrap();
+                sites.iter().map(|site| base_altitude(*site)).collect()
+            } else {
+                return Err(Box::new(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "You must set `TerrainModel` before generating terrain",
+                )));
+            }
+        };
+        self.base_altitudes = Some(base_altitudes);
+        Ok(self)
+    }
+
+    /// Set the function that calculates uplift rates.
+    pub fn set_uplift_rate_func(
+        mut self,
+        uplift_rate_func: Box<dyn Fn(Year, Site) -> UpliftRate>,
+    ) -> Self {
+        self.uplift_rate_func = Some(uplift_rate_func);
         self
     }
 
-    /// Set the erodibilities of sites.
-    pub fn set_erodibilities(mut self, erodibilities: Vec<Erodibility>) -> Self {
-        self.erodibilities = Some(erodibilities);
+    /// Set the function that calculates erodibilities.
+    pub fn set_erodibility_func(
+        mut self,
+        erodibility_func: Box<dyn Fn(Year, Site) -> Erodibility>,
+    ) -> Self {
+        self.erodibility_func = Some(erodibility_func);
         self
     }
 
@@ -84,12 +110,6 @@ impl TerrainGenerator {
         self
     }
 
-    /// Set the exponent `n` for calculating stream power.
-    pub fn set_exponent_n(mut self, n_exp: f64) -> Self {
-        self.n_exp = Some(n_exp);
-        self
-    }
-
     /// Generate terrain using Salève method.
     pub fn generate(&self) -> Result<Terrain, Box<dyn std::error::Error>> {
         let (sites, areas) = {
@@ -100,7 +120,7 @@ impl TerrainGenerator {
             } else {
                 return Err(Box::new(std::io::Error::new(
                     std::io::ErrorKind::InvalidInput,
-                    "You must set vetor map before generating terrain",
+                    "You must set `TerrainModel` before generating terrain",
                 )));
             }
         };
@@ -113,47 +133,33 @@ impl TerrainGenerator {
             }
         };
 
-        let uplift_rates = {
-            if let Some(uplift_rates) = &self.uplift_rates {
-                uplift_rates
+        let uplift_rate_func = {
+            if let Some(uplift_rate_func) = &self.uplift_rate_func {
+                uplift_rate_func
             } else {
                 return Err(Box::new(std::io::Error::new(
                     std::io::ErrorKind::InvalidInput,
-                    "You must set uplift rates before generating terrain",
+                    "You must set uplift rate function before generating terrain",
                 )));
             }
         };
 
-        let erodibilities = {
-            if let Some(erodibilities) = &self.erodibilities {
-                erodibilities
+        let erodibility_func = {
+            if let Some(erodibility_func) = &self.erodibility_func {
+                erodibility_func
             } else {
                 return Err(Box::new(std::io::Error::new(
                     std::io::ErrorKind::InvalidInput,
-                    "You must set erodibilities before generating terrain",
+                    "You must set erodibility function before generating terrain",
                 )));
             }
         };
 
         let m_exp = {
             if let Some(m_exp) = &self.m_exp {
-                m_exp.clone()
+                *m_exp
             } else {
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "You must set m_exp before generating terrain",
-                )));
-            }
-        };
-
-        let n_exp = {
-            if let Some(n_exp) = &self.n_exp {
-                n_exp.clone()
-            } else {
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "You must set n_exp before generating terrain",
-                )));
+                DEFAULT_M_EXP
             }
         };
 
@@ -161,16 +167,14 @@ impl TerrainGenerator {
 
         let year_step = {
             if let Some(year_step) = &self.year_step {
-                year_step.clone()
+                *year_step
+            } else if max_year.is_some() {
+                return Err(Box::new(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "If you specified `max_year` for TerrainBuilder, you must set `year_step` before generating terrain",
+                )));
             } else {
-                if max_year.is_some() {
-                    return Err(Box::new(std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput,
-                        "If you specified `max_year` for TerrainBuilder, you must set `year_step` before generating terrain",
-                    )));
-                } else {
-                    0.0
-                }
+                0.0
             }
         };
 
@@ -189,7 +193,7 @@ impl TerrainGenerator {
             if let Some(outlets) = &self.custom_outlets {
                 outlets.to_vec()
             } else {
-                triangulation.hull.iter().map(|&i| i).collect()
+                triangulation.hull
             }
         };
 
@@ -227,9 +231,9 @@ impl TerrainGenerator {
             let mut year = 0.0;
             loop {
                 let stream_tree =
-                    stream_tree::StreamTree::build(&sites, &altitudes, &graph, &is_outlet);
+                    stream_tree::StreamTree::build(sites, &altitudes, &graph, &is_outlet);
 
-                let mut drainage_areas = areas.clone();
+                let mut drainage_areas = areas.to_vec();
                 let mut response_times = vec![0.0; sites.len()];
                 let mut changed = false;
 
@@ -248,33 +252,22 @@ impl TerrainGenerator {
                         let distance: Length = {
                             let (ok, edge) = graph.has_edge(i, j);
                             if ok {
-                                edge.unwrap()
+                                edge
                             } else {
                                 0.0
                             }
                         };
-                        let celerity = {
-                            let slope = {
-                                if i == j {
-                                    1.0
-                                } else {
-                                    (altitudes[j] - altitudes[i]) / distance
-                                }
-                            };
-                            erodibilities[i]
-                                * drainage_areas[i].powf(m_exp)
-                                * slope.powf(n_exp - 1.0)
-                        };
+                        let celerity =
+                            erodibility_func(year, sites[i]) * drainage_areas[i].powf(m_exp);
+
                         response_times[i] += response_times[j] + 1.0 / celerity * distance;
                     });
-
                     // calculate altitudes
                     drainage_basin.for_each_upstream(|i| {
                         let new_altitude = altitudes[outlet]
-                            + uplift_rates[i] * (response_times[i] - response_times[outlet]);
-                        if !changed {
-                            changed |= new_altitude != altitudes[i];
-                        }
+                            + uplift_rate_func(year, sites[i])
+                                * (response_times[i] - response_times[outlet]);
+                        changed |= new_altitude != altitudes[i];
                         altitudes[i] = new_altitude;
                     });
                 });

@@ -16,15 +16,15 @@ fn test_terrain_generation() {
         sites.push(terrain_rs::units::Site { x, y });
     }
 
-    let seed = terrain_rs::model::TerrainModel::default()
+    let model = terrain_rs::model::TerrainModel::default()
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
         .unwrap()
         .iterate_sites(1)
         .unwrap();
 
-    let sites = seed.get_sites().unwrap();
-    let areas = seed.calculate_areas().unwrap();
+    let sites = model.get_sites().unwrap();
+    let areas = model.calculate_areas().unwrap();
 
     let image = terrain_visualizer::Visualizer::new(
         sites

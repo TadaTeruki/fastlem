@@ -115,8 +115,8 @@ impl TerrainModel {
             )
             .set_bounding_box(BoundingBox::new(
                 voronoice::Point {
-                    x: (b_max.x - b_min.x) / 2.0,
-                    y: (b_max.y - b_min.y) / 2.0,
+                    x: (b_max.x + b_min.x) / 2.0,
+                    y: (b_max.y + b_min.y) / 2.0,
                 },
                 b_max.x - b_min.x,
                 b_max.y - b_min.y,
@@ -171,8 +171,8 @@ impl TerrainModel {
             )
             .set_bounding_box(BoundingBox::new(
                 voronoice::Point {
-                    x: (b_max.x - b_min.x) / 2.0,
-                    y: (b_max.y - b_min.y) / 2.0,
+                    x: (b_max.x + b_min.x) / 2.0,
+                    y: (b_max.y + b_min.y) / 2.0,
                 },
                 b_max.x - b_min.x,
                 b_max.y - b_min.y,
