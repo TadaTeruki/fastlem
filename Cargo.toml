@@ -7,8 +7,10 @@ edition = "2021"
 
 [dependencies]
 terrain_graph = { git = "https://github.com/TadaTeruki/terrain-graph", version = "0.2" }
+delaunator = "1.0"
+voronoice = "0.2"
+
+[dev-dependencies]
 terrain_visualizer = { git = "https://github.com/TadaTeruki/terrain-visualizer" }
 rand = "0.8"
 image = "0.24"
-delaunator = "1.0"
-voronoice = "0.2"
