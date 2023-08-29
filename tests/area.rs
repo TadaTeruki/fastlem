@@ -3,9 +3,9 @@ extern crate lem;
 
 #[test]
 fn test_terrain_generation() {
-    let num = 3000;
+    let num = 10000;
     let bound_min = lem::units::Site { x: 0.0, y: 0.0 };
-    let bound_max = lem::units::Site { x: 50.0, y: 50.0 };
+    let bound_max = lem::units::Site { x: 200.0, y: 100.0 };
 
     let mut sites = Vec::with_capacity(num);
     let mut rng = rand::thread_rng();

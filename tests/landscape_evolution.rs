@@ -7,7 +7,7 @@ fn test_landscape_evolution() {
     let bound_min = lem::units::Site { x: 0.0, y: 0.0 };
     let bound_max = lem::units::Site {
         x: 2000.0 * 1e3, // 2000 km
-        y: 2000.0 * 1e3, // 2000 km
+        y: 1000.0 * 1e3, // 2000 km
     };
 
     let mut sites = Vec::with_capacity(num);
