@@ -7,17 +7,17 @@ use crate::units::{Altitude, Length, Site};
 ///  - `next` is the next site of each site in the flow.
 ///  - `root` is the root(outlet) of each site in the flow.
 pub struct StreamTree {
-    next: Vec<usize>,
+    pub next: Vec<usize>,
 }
 
 struct RidgeElement {
     index: usize,
-    alt: Altitude,
+    diff: Altitude,
 }
 
 impl PartialEq for RidgeElement {
     fn eq(&self, other: &Self) -> bool {
-        self.alt == other.alt
+        self.diff == other.diff
     }
 }
 
@@ -25,7 +25,7 @@ impl Eq for RidgeElement {}
 
 impl Ord for RidgeElement {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.alt.partial_cmp(&self.alt).unwrap()
+        other.diff.partial_cmp(&self.diff).unwrap()
     }
 }
 
@@ -60,24 +60,57 @@ impl Ord for StreamOriginElement {
 }
 
 impl StreamTree {
-    pub fn build(
-        sites: &Vec<Site>,
+    /// Constructs a stream tree from a given terrain.
+    pub fn construct(
+        sites: &[Site],
+        altitudes: &[Altitude],
+        graph: &EdgeAttributedUndirectedGraph<Length>,
+        outlets: &[usize],
+    ) -> Self {
+        let num = sites.len();
+
+        // `is_outlet` is a table that indicates whether a site is an outlet or not.
+        let is_outlet = Self::create_outlet_table(sites, outlets);
+
+        // `next` means the next site of each site in the flow.
+        // initial stream tree can create lakes, which is a root of a stream tree not connected to an outlet.
+        let next = Self::construct_initial_stream_tree(num, altitudes, graph, &is_outlet);
+
+        // subroot is the root of each site in the flow. lakes are not removed yet.
+        let (subroot, has_lake) = Self::find_roots_with_lakes(num, &is_outlet, &next);
+
+        // if there are no lakes, stream tree is already complete
+        if !has_lake {
+            return StreamTree { next };
+        }
+
+        // remove lakes from the stream tree
+        let next =
+            Self::remove_lakes_from_stream_tree(&next, num, altitudes, graph, outlets, &subroot);
+
+        StreamTree { next }
+    }
+
+    fn create_outlet_table(sites: &[Site], outlets: &[usize]) -> Vec<bool> {
+        let mut is_outlet = vec![false; sites.len()];
+        outlets.iter().for_each(|&i| {
+            is_outlet[i] = true;
+        });
+        is_outlet
+    }
+
+    fn construct_initial_stream_tree(
+        num: usize,
         altitudes: &[Altitude],
         graph: &EdgeAttributedUndirectedGraph<Length>,
         is_outlet: &[bool],
-    ) -> Self {
-        let mut subroot: Vec<Option<usize>> = vec![None; sites.len()];
-        let mut next: Vec<usize> = vec![0; sites.len()];
+    ) -> Vec<usize> {
+        let mut next: Vec<usize> = (0..num).collect();
 
-        sites.iter().enumerate().for_each(|(i, _)| {
+        (0..num).for_each(|i| {
             if is_outlet[i] {
-                subroot[i] = Some(i);
-                next[i] = i;
                 return;
             }
-
-            subroot[i] = None;
-            next[i] = i;
 
             let mut steepest_slope = 0.0;
             graph.neighbors_of(i).iter().for_each(|ja| {
@@ -93,10 +126,17 @@ impl StreamTree {
             });
         });
 
-        // find roots
+        next
+    }
+
+    fn find_roots_with_lakes(num: usize, is_outlet: &[bool], next: &[usize]) -> (Vec<usize>, bool) {
+        let mut subroot: Vec<Option<usize>> = (0..num)
+            .map(|i| if is_outlet[i] { Some(i) } else { None })
+            .collect();
+
         let mut has_lake = false;
 
-        sites.iter().enumerate().for_each(|(i, _)| {
+        (0..num).for_each(|i| {
             if subroot[i].is_some() {
                 return;
             }
@@ -122,42 +162,33 @@ impl StreamTree {
             subroot[iv] = ir;
         });
 
-        // if there are no lakes, stream tree is already complete
-        if !has_lake {
-            return StreamTree { next };
-        }
+        (subroot.iter().map(|&r| r.unwrap()).collect(), has_lake)
+    }
 
-        let subroot: Vec<usize> = subroot.iter().map(|&r| r.unwrap()).collect();
-
+    fn remove_lakes_from_stream_tree(
+        next: &[usize],
+        num: usize,
+        altitudes: &[Altitude],
+        graph: &EdgeAttributedUndirectedGraph<Length>,
+        outlets: &[usize],
+        subroot: &[usize],
+    ) -> Vec<usize> {
         // final roots of the stream tree
-        let mut root: Vec<Option<usize>> = vec![None; sites.len()];
-        let mut ridgestack: BinaryHeap<RidgeElement> = BinaryHeap::with_capacity(sites.len());
-
-        sites.iter().enumerate().for_each(|(i, _)| {
-            if is_outlet[i] {
-                root[i] = Some(i);
-
-                ridgestack.push(RidgeElement {
-                    index: i,
-                    alt: altitudes[i],
-                });
-            } else {
-                root[i] = None;
-            }
+        let mut root: Vec<Option<usize>> = vec![None; num];
+        let mut ridgestack: BinaryHeap<RidgeElement> = BinaryHeap::with_capacity(num);
+        outlets.iter().for_each(|&outlet| {
+            root[outlet] = Some(outlet);
+            ridgestack.push(RidgeElement {
+                index: outlet,
+                diff: altitudes[outlet],
+            });
         });
 
         // remove lakes
-        let mut visited: Vec<bool> = vec![false; sites.len()];
-        let mut subaltitudes = altitudes.to_owned();
+        let mut visited: Vec<bool> = vec![false; num];
+        let mut next = next.to_owned();
 
-        loop {
-            let element = {
-                if let Some(element) = ridgestack.pop() {
-                    element
-                } else {
-                    break;
-                }
-            };
+        while let Some(element) = ridgestack.pop() {
             let i = element.index;
 
             if visited[i] {
@@ -181,7 +212,6 @@ impl StreamTree {
                             if next[k] != k {
                                 // flip flow
                                 let tmp = next[k];
-                                subaltitudes[k] = subaltitudes[i];
                                 next[k] = nk;
                                 nk = k;
                                 k = tmp;
@@ -190,24 +220,19 @@ impl StreamTree {
                             }
                         }
                         next[k] = nk;
-                        subaltitudes[k] = subaltitudes[i];
                         root[subroot[j]] = root[subroot[i]];
                     }
 
                     let distance = ja.1;
                     ridgestack.push(RidgeElement {
                         index: j,
-                        alt: (subaltitudes[j] - subaltitudes[i]) * distance,
+                        diff: (altitudes[j] - altitudes[i]) * distance,
                     });
                 });
             root[i] = root[subroot[i]];
             visited[i] = true;
         }
 
-        StreamTree { next }
-    }
-
-    pub fn get_next(&self, i: usize) -> usize {
-        self.next[i]
+        next
     }
 }

@@ -2,12 +2,15 @@ use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
 use crate::{stream_tree, units::Length};
 
+/// Represents the drainage basin.
+/// This enables to iterate over the sites in the drainage basin with no duplication.
 pub struct DrainageBasin {
     traversal: Vec<usize>,
 }
 
 impl DrainageBasin {
-    pub fn build(
+    /// Construct a new `DrainageBasin` from the given outlet.
+    pub fn construct(
         outlet: usize,
         stream_tree: &stream_tree::StreamTree,
         graph: &EdgeAttributedUndirectedGraph<Length>,
@@ -19,7 +22,7 @@ impl DrainageBasin {
             let it = traversal[i];
             graph.neighbors_of(it).iter().for_each(|ja| {
                 let jt = ja.0;
-                if stream_tree.get_next(jt) == it {
+                if stream_tree.next[jt] == it {
                     traversal.push(jt);
                 }
             });
@@ -32,10 +35,12 @@ impl DrainageBasin {
         Self { traversal }
     }
 
+    /// Iterates over the sites in the drainage basin from the outlet to the upstream.
     pub fn for_each_upstream(&self, mut f: impl FnMut(usize)) {
         self.traversal.iter().for_each(|i| f(*i));
     }
 
+    /// Iterates over the sites in the drainage basin from the top of the stream to the downstream.
     pub fn for_each_downstream(&self, mut f: impl FnMut(usize)) {
         self.traversal.iter().rev().for_each(|i| f(*i));
     }

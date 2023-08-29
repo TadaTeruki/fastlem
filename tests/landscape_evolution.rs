@@ -1,11 +1,14 @@
 use rand::Rng;
-extern crate terrain_rs;
+extern crate lem;
 
 #[test]
-fn test_terrain_generation() {
-    let num = 10000;
-    let bound_min = terrain_rs::units::Site { x: 0.0, y: 0.0 };
-    let bound_max = terrain_rs::units::Site { x: 200.0, y: 100.0 };
+fn test_landscape_evolution() {
+    let num = 50000;
+    let bound_min = lem::units::Site { x: 0.0, y: 0.0 };
+    let bound_max = lem::units::Site {
+        x: 2000.0 * 1e3, // 2000 km
+        y: 2000.0 * 1e3, // 2000 km
+    };
 
     let mut sites = Vec::with_capacity(num);
     let mut rng = rand::thread_rng();
@@ -13,20 +16,22 @@ fn test_terrain_generation() {
     for _ in 0..num {
         let x = rng.gen_range(bound_min.x..bound_max.x);
         let y = rng.gen_range(bound_min.y..bound_max.y);
-        sites.push(terrain_rs::units::Site { x, y });
+        sites.push(lem::units::Site { x, y });
     }
 
-    let model = terrain_rs::model::TerrainModel::default()
+    let model = lem::model::TerrainModel::default()
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
         .unwrap()
         .iterate_sites(1)
         .unwrap();
 
-    let terrain = terrain_rs::generator::TerrainGenerator::default()
+    let terrain = lem::generator::TerrainGenerator::default()
         .set_model(model)
-        .set_uplift_rate_func(Box::new(|_, _| 1e-2))
-        .set_erodibility_func(Box::new(|_, _| 1e-6))
+        .set_uplift_rate(1e-4 * 5.0)
+        .set_erodibility(1e-7 * 5.61)
+        .set_max_slope(3.14 * 0.03) // radian
+        .set_exponent_m(0.5)
         .generate()
         .unwrap();
 
@@ -37,19 +42,14 @@ fn test_terrain_generation() {
         sites
             .iter()
             .enumerate()
-            .map(|(i, n)| {
-                (
-                    terrain_visualizer::Site { x: n.x, y: n.y },
-                    altitudes.get(i).unwrap().clone(),
-                )
-            })
+            .map(|(i, n)| (terrain_visualizer::Site { x: n.x, y: n.y }, altitudes[i]))
             .collect::<Vec<(terrain_visualizer::Site, f64)>>(),
     )
     .set_x_range(bound_min.x, bound_max.x)
     .set_y_range(bound_min.y, bound_max.y);
 
     image
-        .render_image(Some(500), None, |weight_rate: f64| {
+        .render_image(Some(1000), None, |weight_rate: f64| {
             let c = (weight_rate * 220.0 + 30.0) as u8;
             image::Rgb([c, c, c])
         })

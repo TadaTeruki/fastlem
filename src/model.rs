@@ -5,7 +5,7 @@ use voronoice::{BoundingBox, VoronoiBuilder};
 
 use crate::units::{Area, Site};
 
-/// A set of sites.
+/// A set of sites for representing the terrain.
 #[derive(Default, Clone)]
 pub struct TerrainModel {
     sites: Option<Vec<Site>>,

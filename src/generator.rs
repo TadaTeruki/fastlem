@@ -6,32 +6,33 @@ use crate::{
     model::TerrainModel,
     stream_tree,
     terrain::Terrain,
-    units::{Altitude, Erodibility, Length, Site, UpliftRate, Year},
+    units::{Altitude, Erodibility, Length, Site, Slope, Step, UpliftRate},
 };
 
+/// The default value of the exponent `m` for calculating stream power.
 const DEFAULT_M_EXP: f64 = 0.5;
 
 /// Provides methods for generating terrain.
 ///
 /// ### Required parameters
-///  - `model`: the set of sites.
-///  - `uplift_rate_func`: the function that calculates uplift rates.
-///  - `erodibility_func`: the function that calculates erodibilities.
+///  - `model` is the set of sites.
+///  - `uplift_rate_func` is the function that calculates uplift rates.
+///  - `erodibility_func` is the function that calculates erodibilities.
 /// ### Optional parameters
-///  - `base_altitudes`: the base altitudes of sites. If `None`, the base altitudes will be set to zero.
-///  - `custom_outlets`: he custom outlets of sites. If `None`, the outlets will be computed from the convex hull of the sites.
-///  - `year_step` is the time step of each iteration.
-///  - `max_year` is the maximum time of the iteration. If `None`, the iteration will not stop until the altitudes of all sites are stable.
+///  - `base_altitudes` is the base altitudes of sites. If `None`, the base altitudes will be set to zero.
+///  - `custom_outlets` is he custom outlets of sites. If `None`, the outlets will be computed from the convex hull of the sites.
+///  - `max_slope_func` is the function that calculates maximum slopes. If `None`, the slopes will not be checked. The return value should be always between 0 and pi/2.
+///  - `max_iteration` is the maximum number of iterations. If `None`, the iterations will be repeated until the altitudes of all sites are stable.
 ///  - `m_exp` is the constants for calculating stream power. If `None`, the default value is 0.5.
 #[derive(Default)]
 pub struct TerrainGenerator {
     model: Option<TerrainModel>,
     base_altitudes: Option<Vec<Altitude>>,
-    uplift_rate_func: Option<Box<dyn Fn(Year, Site) -> UpliftRate>>,
-    erodibility_func: Option<Box<dyn Fn(Year, Site) -> Erodibility>>,
+    uplift_rate_func: Option<Box<dyn Fn(Step, Site) -> UpliftRate>>,
+    erodibility_func: Option<Box<dyn Fn(Step, Site) -> Erodibility>>,
+    max_slope_func: Option<Box<dyn Fn(Step, Site) -> Slope>>,
     custom_outlets: Option<Vec<usize>>,
-    year_step: Option<Year>,
-    max_year: Option<Year>,
+    max_iteration: Option<Step>,
     m_exp: Option<f64>,
 }
 
@@ -55,7 +56,7 @@ impl TerrainGenerator {
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let base_altitudes = {
             if let Some(model) = &self.model {
-                let sites = model.get_sites().unwrap();
+                let sites = model.get_sites()?;
                 sites.iter().map(|site| base_altitude(*site)).collect()
             } else {
                 return Err(Box::new(std::io::Error::new(
@@ -68,21 +69,53 @@ impl TerrainGenerator {
         Ok(self)
     }
 
+    /// Set the constant uplift rates.
+    pub fn set_uplift_rate(mut self, uplift_rate: UpliftRate) -> Self {
+        self.uplift_rate_func = Some(Box::new(move |_, _| uplift_rate));
+        self
+    }
+
     /// Set the function that calculates uplift rates.
     pub fn set_uplift_rate_func(
         mut self,
-        uplift_rate_func: Box<dyn Fn(Year, Site) -> UpliftRate>,
+        uplift_rate_func: Box<dyn Fn(Step, Site) -> UpliftRate>,
     ) -> Self {
         self.uplift_rate_func = Some(uplift_rate_func);
+        self
+    }
+
+    /// Set the constant erodibilities.
+    pub fn set_erodibility(mut self, erodibility: Erodibility) -> Self {
+        self.erodibility_func = Some(Box::new(move |_, _| erodibility));
         self
     }
 
     /// Set the function that calculates erodibilities.
     pub fn set_erodibility_func(
         mut self,
-        erodibility_func: Box<dyn Fn(Year, Site) -> Erodibility>,
+        erodibility_func: Box<dyn Fn(Step, Site) -> Erodibility>,
     ) -> Self {
         self.erodibility_func = Some(erodibility_func);
+        self
+    }
+
+    /// Set the constant maximum slopes.
+    /// The slope should be between 0 and pi/2;
+    pub fn set_max_slope(mut self, max_slope: Slope) -> Self {
+        self.max_slope_func = Some(Box::new(move |_, _| max_slope));
+        self
+    }
+
+    /// Set the function that calculates maximum slopes.
+    /// The slope should be always between 0 and pi/2;
+    pub fn set_max_slope_func(mut self, max_slope_func: Box<dyn Fn(Step, Site) -> Slope>) -> Self {
+        self.max_slope_func = Some(max_slope_func);
+        self
+    }
+
+    /// Set the maximum number of iterations.
+    pub fn set_max_iteration(mut self, max_iteration: Step) -> Self {
+        self.max_iteration = Some(max_iteration);
         self
     }
 
@@ -92,25 +125,13 @@ impl TerrainGenerator {
         self
     }
 
-    /// Set the time step of each iteration.
-    pub fn set_year_step(mut self, year_step: Year) -> Self {
-        self.year_step = Some(year_step);
-        self
-    }
-
-    /// Set the maximum time of the iteration.
-    pub fn set_max_year(mut self, max_year: Year) -> Self {
-        self.max_year = Some(max_year);
-        self
-    }
-
     /// Set the exponent `m` for calculating stream power.
     pub fn set_exponent_m(mut self, m_exp: f64) -> Self {
         self.m_exp = Some(m_exp);
         self
     }
 
-    /// Generate terrain using Salève method.
+    /// Generate terrain.
     pub fn generate(&self) -> Result<Terrain, Box<dyn std::error::Error>> {
         let (sites, areas) = {
             if let Some(model) = &self.model {
@@ -163,21 +184,6 @@ impl TerrainGenerator {
             }
         };
 
-        let max_year = self.max_year;
-
-        let year_step = {
-            if let Some(year_step) = &self.year_step {
-                *year_step
-            } else if max_year.is_some() {
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "If you specified `max_year` for TerrainBuilder, you must set `year_step` before generating terrain",
-                )));
-            } else {
-                0.0
-            }
-        };
-
         let triangulation = {
             let points: Vec<Point> = sites
                 .iter()
@@ -218,37 +224,33 @@ impl TerrainGenerator {
             graph
         };
 
-        let is_outlet = {
-            let mut is_outlet = vec![false; sites.len()];
-            outlets.iter().for_each(|&i| {
-                is_outlet[i] = true;
-            });
-            is_outlet
-        };
-
         let altitudes: Vec<Altitude> = {
             let mut altitudes = base_altitudes;
-            let mut year = 0.0;
+            let mut step = 0;
             loop {
                 let stream_tree =
-                    stream_tree::StreamTree::build(sites, &altitudes, &graph, &is_outlet);
+                    stream_tree::StreamTree::construct(sites, &altitudes, &graph, &outlets);
 
                 let mut drainage_areas = areas.to_vec();
                 let mut response_times = vec![0.0; sites.len()];
                 let mut changed = false;
 
+                // calculate altitudes for each drainage basin
                 outlets.iter().for_each(|&outlet| {
-                    let drainage_basin = DrainageBasin::build(outlet, &stream_tree, &graph);
+                    // construct drainage basin
+                    let drainage_basin = DrainageBasin::construct(outlet, &stream_tree, &graph);
+
                     // calculate drainage areas
                     drainage_basin.for_each_downstream(|i| {
-                        let j = stream_tree.get_next(i);
+                        let j = stream_tree.next[i];
                         if j != i {
                             drainage_areas[j] += drainage_areas[i];
                         }
                     });
+
                     // calculate response times
                     drainage_basin.for_each_upstream(|i| {
-                        let j = stream_tree.get_next(i);
+                        let j = stream_tree.next[i];
                         let distance: Length = {
                             let (ok, edge) = graph.has_edge(i, j);
                             if ok {
@@ -258,26 +260,48 @@ impl TerrainGenerator {
                             }
                         };
                         let celerity =
-                            erodibility_func(year, sites[i]) * drainage_areas[i].powf(m_exp);
+                            erodibility_func(step, sites[i]) * drainage_areas[i].powf(m_exp);
 
                         response_times[i] += response_times[j] + 1.0 / celerity * distance;
                     });
+
                     // calculate altitudes
                     drainage_basin.for_each_upstream(|i| {
-                        let new_altitude = altitudes[outlet]
-                            + uplift_rate_func(year, sites[i])
+                        let mut new_altitude = altitudes[outlet]
+                            + uplift_rate_func(step, sites[i])
                                 * (response_times[i] - response_times[outlet]);
+
+                        // check if the slope is too steep
+                        // if max_slope_func is not set, the slope is not checked
+                        if let Some(max_slope_func) = &self.max_slope_func {
+                            let j = stream_tree.next[i];
+                            let distance: Length = {
+                                let (ok, edge) = graph.has_edge(i, j);
+                                if ok {
+                                    edge
+                                } else {
+                                    1.0
+                                }
+                            };
+                            let max_slope = max_slope_func(step, sites[i]).tan();
+                            let slope = (new_altitude - altitudes[j]) / distance;
+                            if slope > max_slope {
+                                new_altitude = altitudes[j] + max_slope * distance;
+                            }
+                        }
+
                         changed |= new_altitude != altitudes[i];
                         altitudes[i] = new_altitude;
                     });
                 });
-                year += year_step;
 
+                // if the altitudes of all sites are stable, break
                 if !changed {
                     break;
                 }
-                if let Some(max_year) = max_year {
-                    if year > max_year {
+                step += 1;
+                if let Some(max_iteration) = &self.max_iteration {
+                    if step >= *max_iteration {
                         break;
                     }
                 }
