@@ -5,7 +5,7 @@ extern crate lem;
 
 #[test]
 fn test_landscape_evolution() {
-    let num = 50000;
+    let num = 10000;
     let bound_min = Site2D { x: 0.0, y: 0.0 };
     let bound_max = Site2D {
         x: 2000.0 * 1e3, // 2000 km

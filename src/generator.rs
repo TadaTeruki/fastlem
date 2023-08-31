@@ -11,14 +11,14 @@ const DEFAULT_M_EXP: f64 = 0.5;
 /// Provides methods for generating terrain.
 ///
 /// ### Required parameters
-///  - `model` is the set of sites.
+///  - `model` is the vector representation of the terrain.
 ///  - `uplift_rate_func` is the function that calculates uplift rates.
 ///  - `erodibility_func` is the function that calculates erodibilities.
 /// ### Optional parameters
-///  - `base_altitudes` is the base altitudes of sites. If `None`, the base altitudes will be set to zero.
-///  - `max_slope_func` is the function that calculates maximum slopes. If `None`, the slopes will not be checked. The return value should be always between 0 and pi/2.
-///  - `max_iteration` is the maximum number of iterations. If `None`, the iterations will be repeated until the altitudes of all sites are stable.
-///  - `m_exp` is the constants for calculating stream power. If `None`, the default value is 0.5.
+///  - `base_altitudes` is the base altitudes of sites. If not set, the base altitudes will be set to zero.
+///  - `max_slope_func` is the function that calculates maximum slopes. If not set, the slopes will not be checked. The return value should be always between 0 and pi/2.
+///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the altitudes of all sites are stable.
+///  - `m_exp` is the constants for calculating stream power. If not set, the default value is 0.5.
 pub struct TerrainGenerator<S: Site, M: Model<S>> {
     model: Option<M>,
     uplift_rate_func: Option<Box<dyn Fn(Step, S) -> UpliftRate>>,
@@ -226,7 +226,6 @@ impl<S: Site, M: Model<S>> TerrainGenerator<S, M> {
                         };
                         let celerity =
                             erodibility_func(step, sites[i]) * drainage_areas[i].powf(m_exp);
-
                         response_times[i] += response_times[j] + 1.0 / celerity * distance;
                     });
 
