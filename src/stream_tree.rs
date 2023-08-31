@@ -5,7 +5,6 @@ use crate::units::{Altitude, Length, Site};
 
 /// Tree structure for representing the flow of water.
 ///  - `next` is the next site of each site in the flow.
-///  - `root` is the root(outlet) of each site in the flow.
 pub struct StreamTree {
     pub next: Vec<usize>,
 }
@@ -61,8 +60,8 @@ impl Ord for StreamOriginElement {
 
 impl StreamTree {
     /// Constructs a stream tree from a given terrain.
-    pub fn construct(
-        sites: &[Site],
+    pub fn construct<S: Site>(
+        sites: &[S],
         altitudes: &[Altitude],
         graph: &EdgeAttributedUndirectedGraph<Length>,
         outlets: &[usize],
@@ -72,11 +71,11 @@ impl StreamTree {
         // `is_outlet` is a table that indicates whether a site is an outlet or not.
         let is_outlet = Self::create_outlet_table(sites, outlets);
 
-        // `next` means the next site of each site in the flow.
-        // initial stream tree can create lakes, which is a root of a stream tree not connected to an outlet.
+        // `next` is the next site of each site in the flow.
+        // at this point, the stream tree can create lakes: a root of a stream tree not connected to an outlet.
         let next = Self::construct_initial_stream_tree(num, altitudes, graph, &is_outlet);
 
-        // subroot is the root of each site in the flow. lakes are not removed yet.
+        // `subroot` is the root of each site in the flow. lakes are not removed yet.
         let (subroot, has_lake) = Self::find_roots_with_lakes(num, &is_outlet, &next);
 
         // if there are no lakes, stream tree is already complete
@@ -91,7 +90,7 @@ impl StreamTree {
         StreamTree { next }
     }
 
-    fn create_outlet_table(sites: &[Site], outlets: &[usize]) -> Vec<bool> {
+    fn create_outlet_table<S: Site>(sites: &[S], outlets: &[usize]) -> Vec<bool> {
         let mut is_outlet = vec![false; sites.len()];
         outlets.iter().for_each(|&i| {
             is_outlet[i] = true;

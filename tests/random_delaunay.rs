@@ -1,11 +1,13 @@
+use lem::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
+use lem::units::Model;
 use rand::Rng;
 extern crate lem;
 
 #[test]
 fn test_random_delaunay() {
     let num = 10000;
-    let bound_min = lem::units::Site { x: 0.0, y: 0.0 };
-    let bound_max = lem::units::Site { x: 200.0, y: 100.0 };
+    let bound_min = Site2D { x: 0.0, y: 0.0 };
+    let bound_max = Site2D { x: 200.0, y: 100.0 };
 
     let mut sites = Vec::with_capacity(num);
     let mut rng = rand::thread_rng();
@@ -13,17 +15,19 @@ fn test_random_delaunay() {
     for _ in 0..num {
         let x = rng.gen_range(bound_min.x..bound_max.x);
         let y = rng.gen_range(bound_min.y..bound_max.y);
-        sites.push(lem::units::Site { x, y });
+        sites.push(Site2D { x, y });
     }
 
-    let model = lem::model::TerrainModel::default()
+    let model = TerrainModel2DBulider::default()
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
         .unwrap()
         .iterate_sites(1)
+        .unwrap()
+        .build()
         .unwrap();
 
-    let sites = model.get_sites().unwrap();
+    let sites = model.sites();
 
     let image = terrain_visualizer::Visualizer::new(
         sites

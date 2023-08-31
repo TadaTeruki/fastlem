@@ -1,3 +1,5 @@
+use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
+
 /// Length (unit: L);
 pub type Length = f64;
 
@@ -22,25 +24,18 @@ pub type Step = u32;
 /// Response Time.
 pub type ResponseTime = f64;
 
-/// A 2D point in the plane.
-#[derive(Clone, Copy, Debug)]
-pub struct Site {
-    pub x: Length,
-    pub y: Length,
-}
-
-impl Site {
-    pub fn new(x: Length, y: Length) -> Self {
-        Self { x, y }
-    }
-
+pub trait Site: Copy + Clone + Default {
     /// Calculate the distance between two sites.
-    pub fn distance(&self, other: &Site) -> Length {
-        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)).sqrt()
-    }
+    fn distance(&self, other: &Self) -> Length;
 
     /// Calculate the squared distance between two sites.
-    pub fn squared_distance(&self, other: &Site) -> Length {
-        (self.x - other.x).powi(2) + (self.y - other.y).powi(2)
-    }
+    fn squared_distance(&self, other: &Self) -> Length;
+}
+
+pub trait Model<S: Site> {
+    fn num(&self) -> usize;
+    fn sites(&self) -> &[S];
+    fn areas(&self) -> &[Area];
+    fn outlets(&self) -> &[usize];
+    fn graph(&self) -> &EdgeAttributedUndirectedGraph<Length>;
 }

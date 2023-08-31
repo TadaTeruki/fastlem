@@ -1,21 +1,25 @@
 use std::{error, io};
 
 use delaunator::Point;
+use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 use voronoice::{BoundingBox, VoronoiBuilder};
 
-use crate::units::{Area, Site};
+use crate::units::{Area, Length, Site};
+
+use super::{model::TerrainModel2D, sites::Site2D};
 
 /// A set of sites for representing the terrain.
 #[derive(Default, Clone)]
-pub struct TerrainModel {
-    sites: Option<Vec<Site>>,
-    bound_min: Option<Site>,
-    bound_max: Option<Site>,
+pub struct TerrainModel2DBulider {
+    sites: Option<Vec<Site2D>>,
+    bound_min: Option<Site2D>,
+    bound_max: Option<Site2D>,
+    custom_outlets: Option<Vec<usize>>,
 }
 
-impl TerrainModel {
+impl TerrainModel2DBulider {
     /// Set sites.
-    pub fn set_sites(mut self, sites: Vec<Site>) -> Self {
+    pub fn set_sites(mut self, sites: Vec<Site2D>) -> Self {
         self.sites = Some(sites);
         self
     }
@@ -26,8 +30,8 @@ impl TerrainModel {
     /// computed from the sites.
     pub fn set_bounding_box(
         mut self,
-        bound_min: Option<Site>,
-        bound_max: Option<Site>,
+        bound_min: Option<Site2D>,
+        bound_max: Option<Site2D>,
     ) -> Result<Self, Box<impl error::Error>> {
         let sites = {
             if let Some(sites) = &mut self.sites {
@@ -45,11 +49,11 @@ impl TerrainModel {
                 b_min
             } else {
                 sites.iter().fold(
-                    Site {
+                    Site2D {
                         x: std::f64::MAX,
                         y: std::f64::MAX,
                     },
-                    |acc, s| Site {
+                    |acc, s| Site2D {
                         x: acc.x.min(s.x),
                         y: acc.y.min(s.y),
                     },
@@ -61,11 +65,11 @@ impl TerrainModel {
                 b_max
             } else {
                 sites.iter().fold(
-                    Site {
+                    Site2D {
                         x: std::f64::MIN,
                         y: std::f64::MIN,
                     },
-                    |acc, s| Site {
+                    |acc, s| Site2D {
                         x: acc.x.max(s.x),
                         y: acc.y.max(s.y),
                     },
@@ -129,17 +133,21 @@ impl TerrainModel {
                 voronoi
                     .sites()
                     .iter()
-                    .map(|s| Site { x: s.x, y: s.y })
-                    .collect::<Vec<Site>>(),
+                    .map(|s| Site2D { x: s.x, y: s.y })
+                    .collect::<Vec<Site2D>>(),
             );
         }
 
         Ok(self)
     }
 
-    /// Calculate the area of each site.
-    /// The area is calculated using the Voronoi diagram.
-    pub fn calculate_areas(&self) -> Result<Vec<Area>, Box<impl error::Error>> {
+    /// Set the custom outlets of sites.
+    pub fn set_custom_outlets(mut self, custom_outlets: Vec<usize>) -> Self {
+        self.custom_outlets = Some(custom_outlets);
+        self
+    }
+
+    pub fn build(&self) -> Result<TerrainModel2D, Box<impl error::Error>> {
         let sites = {
             if let Some(sites) = &self.sites {
                 sites
@@ -192,25 +200,48 @@ impl TerrainModel {
                     area.abs() / 2.0
                 })
                 .collect();
-            Ok(areas)
+
+            let triangulation = voronoi.triangulation();
+
+            let graph: EdgeAttributedUndirectedGraph<Length> = {
+                let mut graph: EdgeAttributedUndirectedGraph<f64> =
+                    EdgeAttributedUndirectedGraph::new(sites.len());
+                for triangle in triangulation.triangles.chunks_exact(3) {
+                    let a = triangle[0];
+                    let b = triangle[1];
+                    let c = triangle[2];
+
+                    if a < b {
+                        graph.add_edge(a, b, sites[a].distance(&sites[b]));
+                    }
+                    if b < c {
+                        graph.add_edge(b, c, sites[b].distance(&sites[c]));
+                    }
+                    if c < a {
+                        graph.add_edge(c, a, sites[c].distance(&sites[a]));
+                    }
+                }
+                graph
+            };
+
+            let outlets: Vec<usize> = {
+                if let Some(outlets) = &self.custom_outlets {
+                    outlets.to_vec()
+                } else {
+                    triangulation.hull.to_vec()
+                }
+            };
+
+            Ok(TerrainModel2D {
+                sites: sites.to_vec(),
+                areas,
+                graph,
+                outlets,
+            })
         } else {
             Err(Box::new(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "Failed to calculate area",
-            )))
-        }
-    }
-
-    /// Get the reference to the sites.
-    /// Even if the sites are set using `set_sites`,
-    /// the values may be changed after doing some operations like `iterate_sites`.
-    pub fn get_sites(&self) -> Result<&Vec<Site>, Box<impl error::Error>> {
-        if let Some(sites) = &self.sites {
-            Ok(sites)
-        } else {
-            Err(Box::new(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "You must set sites using `set_sites` before getting sites",
             )))
         }
     }

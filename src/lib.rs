@@ -1,5 +1,5 @@
 pub mod generator;
-pub mod model;
+pub mod model2d;
 pub mod units;
 
 mod drainage_basin;

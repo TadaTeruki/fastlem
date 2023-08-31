@@ -5,13 +5,13 @@ use crate::units::{Altitude, Site};
 /// - `sites` is the set of sites.
 /// - `altitudes` is the set of altitudes.
 #[derive(Default)]
-pub struct Terrain {
-    pub sites: Vec<Site>,
+pub struct Terrain<S: Site> {
+    pub sites: Vec<S>,
     pub altitudes: Vec<Altitude>,
 }
 
-impl Terrain {
-    pub fn new(sites: Vec<Site>, altitudes: Vec<Altitude>) -> Self {
+impl<S: Site> Terrain<S> {
+    pub fn new(sites: Vec<S>, altitudes: Vec<Altitude>) -> Self {
         Self { sites, altitudes }
     }
 }

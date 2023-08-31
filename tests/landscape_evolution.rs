@@ -1,11 +1,13 @@
+use lem::generator::TerrainGenerator;
+use lem::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
 use rand::Rng;
 extern crate lem;
 
 #[test]
 fn test_landscape_evolution() {
     let num = 50000;
-    let bound_min = lem::units::Site { x: 0.0, y: 0.0 };
-    let bound_max = lem::units::Site {
+    let bound_min = Site2D { x: 0.0, y: 0.0 };
+    let bound_max = Site2D {
         x: 2000.0 * 1e3, // 2000 km
         y: 1000.0 * 1e3, // 2000 km
     };
@@ -16,17 +18,19 @@ fn test_landscape_evolution() {
     for _ in 0..num {
         let x = rng.gen_range(bound_min.x..bound_max.x);
         let y = rng.gen_range(bound_min.y..bound_max.y);
-        sites.push(lem::units::Site { x, y });
+        sites.push(Site2D { x, y });
     }
 
-    let model = lem::model::TerrainModel::default()
+    let model = TerrainModel2DBulider::default()
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
         .unwrap()
         .iterate_sites(1)
+        .unwrap()
+        .build()
         .unwrap();
 
-    let terrain = lem::generator::TerrainGenerator::default()
+    let terrain = TerrainGenerator::default()
         .set_model(model)
         .set_uplift_rate(1e-4 * 5.0)
         .set_erodibility(1e-7 * 5.61)
