@@ -1,7 +1,7 @@
-use lem::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
-use lem::units::Model;
+use terrain::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
+use terrain::units::Model;
 use rand::Rng;
-extern crate lem;
+extern crate terrain;
 
 #[test]
 fn test_terrain_generation() {

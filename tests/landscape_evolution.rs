@@ -1,7 +1,7 @@
-use lem::generator::TerrainGenerator;
-use lem::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
+use terrain::generator::TerrainGenerator;
+use terrain::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
 use rand::Rng;
-extern crate lem;
+extern crate terrain;
 
 #[test]
 fn test_landscape_evolution() {
