@@ -8,8 +8,8 @@ fn test_landscape_evolution() {
     let num = 10000;
     let bound_min = Site2D { x: 0.0, y: 0.0 };
     let bound_max = Site2D {
-        x: 2000.0 * 1e3, // 2000 km
-        y: 1000.0 * 1e3, // 2000 km
+        x: 200.0 * 1e3, // 200 km
+        y: 100.0 * 1e3, // 100 km
     };
 
     let mut sites = Vec::with_capacity(num);
@@ -34,7 +34,7 @@ fn test_landscape_evolution() {
         .set_model(model)
         .set_uplift_rate(1e-4 * 5.0)
         .set_erodibility(1e-7 * 5.61)
-        .set_max_slope(3.14 * 0.03) // radian
+        .set_max_slope(3.14 * 0.1) // radian
         .set_exponent_m(0.5)
         .generate()
         .unwrap();
