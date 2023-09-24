@@ -11,7 +11,7 @@ use super::sites::Site2D;
 /// - `areas` is the areas of each site.
 /// - `graph` is the graph representing the conecctions between sites.
 /// - `outlets` is the set of outlets.
-/// - `triangles` is the set of triangles constructed by the sites.
+/// - `triangles` is the set of triangles created by delaunay triangulation.
 pub struct TerrainModel2D {
     pub sites: Vec<Site2D>,
     pub areas: Vec<Area>,

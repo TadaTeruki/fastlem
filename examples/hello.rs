@@ -27,7 +27,7 @@ fn main() {
     // `TerrainModel` is a set of fundamental data required for genreating terrain.
     // This includes a set of sites and graph (created by delaunay triangulation).
     // When `build` method is called, the model is validated and the graph is constructed.
-    // Using `set_bounding_box` and `iterate_sites` methods, the sites are relocated to apploximately evenly spaced positions using Lloyd's algorithm.
+    // When `iterate_sites` method is called (after `set_bounding_box` method was called), the sites are relocated to apploximately evenly spaced positions using Lloyd's algorithm.
     let model = TerrainModel2DBulider::default()
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
@@ -47,14 +47,14 @@ fn main() {
         .set_exponent_m(0.5)
         .generate()
         .unwrap();
-    
+
     // Render to image.
     // In this example, the terrain is represented by small rectangles, resulting in many voids between the rectangles.
     // The color of the rectangle is determined by the altitude of the site.
     let img_width = 500;
     let img_height = 500;
     let rect_width = 5;
-    
+
     let mut image_buf = image::RgbImage::new(img_width, img_height);
     let max_altitude = terrain
         .altitudes
@@ -72,12 +72,8 @@ fn main() {
                 if x < 0 || x >= img_width as i32 || y < 0 || y >= img_height as i32 {
                     continue;
                 }
-                
-                image_buf.put_pixel(
-                    x as u32,
-                    y as u32,
-                    image::Rgb([color, color, color]),
-                );
+
+                image_buf.put_pixel(x as u32, y as u32, image::Rgb([color, color, color]));
             }
         }
     });
