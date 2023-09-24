@@ -89,7 +89,6 @@ impl TerrainModel2DBulider {
             .build();
 
         if let Some(voronoi) = voronoi_opt {
-            println!("{}", voronoi.sites().clone().len());
             self.sites = Some(
                 voronoi
                     .sites()

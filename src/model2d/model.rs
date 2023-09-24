@@ -4,7 +4,7 @@ use crate::units::{Area, Length, Model};
 
 use super::sites::Site2D;
 
-/// 2D vector representation of terrain.
+/// A set of fundamental data required for genreating terrain.
 ///
 /// ### Properties
 /// - `sites` is the set of sites.
