@@ -1,6 +1,6 @@
+use rand::Rng;
 use terrain::generator::TerrainGenerator;
 use terrain::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
-use rand::Rng;
 extern crate terrain;
 
 fn main() {
@@ -16,11 +16,13 @@ fn main() {
 
     // Generate random sites
     let mut rng = rand::thread_rng();
-    let sites = (0..num).map(|_| {
-        let x = rng.gen_range(bound_min.x..bound_max.x);
-        let y = rng.gen_range(bound_min.y..bound_max.y);
-        Site2D { x, y }
-    }).collect::<Vec<Site2D>>();
+    let sites = (0..num)
+        .map(|_| {
+            let x = rng.gen_range(bound_min.x..bound_max.x);
+            let y = rng.gen_range(bound_min.y..bound_max.y);
+            Site2D { x, y }
+        })
+        .collect::<Vec<Site2D>>();
 
     // `TerrainModel` is a set of fundamental data required for genreating terrain.
     // This includes a set of sites and graph (created by delaunay triangulation).
@@ -45,4 +47,40 @@ fn main() {
         .set_exponent_m(0.5)
         .generate()
         .unwrap();
+    
+    // Render to image.
+    // In this example, the terrain is represented by small rectangles, resulting in many voids between the rectangles.
+    // The color of the rectangle is determined by the altitude of the site.
+    let img_width = 500;
+    let img_height = 500;
+    let rect_width = 5;
+    
+    let mut image_buf = image::RgbImage::new(img_width, img_height);
+    let max_altitude = terrain
+        .altitudes
+        .iter()
+        .fold(std::f64::MIN, |acc, &n| n.max(acc));
+
+    terrain.sites.iter().enumerate().for_each(|(i, n)| {
+        let x = img_width as f64 * (n.x / bound_max.x);
+        let y = img_height as f64 * (n.y / bound_max.y);
+        let color = (terrain.altitudes[i] / (max_altitude) * 255.0) as u8;
+        for dx in 0..rect_width {
+            for dy in 0..rect_width {
+                let x = x as i32 + dx;
+                let y = y as i32 + dy;
+                if x < 0 || x >= img_width as i32 || y < 0 || y >= img_height as i32 {
+                    continue;
+                }
+                
+                image_buf.put_pixel(
+                    x as u32,
+                    y as u32,
+                    image::Rgb([color, color, color]),
+                );
+            }
+        }
+    });
+
+    image_buf.save("image.png").unwrap();
 }

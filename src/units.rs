@@ -38,4 +38,5 @@ pub trait Model<S: Site> {
     fn areas(&self) -> &[Area];
     fn outlets(&self) -> &[usize];
     fn graph(&self) -> &EdgeAttributedUndirectedGraph<Length>;
+    fn triangles(&self) -> &[[usize; 3]];
 }

@@ -181,11 +181,18 @@ impl TerrainModel2DBulider {
                 }
             };
 
+            let triangles = triangulation
+                .triangles
+                .chunks_exact(3)
+                .map(|t| [t[0], t[1], t[2]])
+                .collect();
+
             Ok(TerrainModel2D {
                 sites: sites.to_vec(),
                 areas,
                 graph,
                 outlets,
+                triangles,
             })
         } else {
             Err(Box::new(io::Error::new(

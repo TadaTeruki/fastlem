@@ -11,11 +11,13 @@ use super::sites::Site2D;
 /// - `areas` is the areas of each site.
 /// - `graph` is the graph representing the conecctions between sites.
 /// - `outlets` is the set of outlets.
+/// - `triangles` is the set of triangles constructed by the sites.
 pub struct TerrainModel2D {
     pub sites: Vec<Site2D>,
     pub areas: Vec<Area>,
     pub graph: EdgeAttributedUndirectedGraph<Length>,
     pub outlets: Vec<usize>,
+    pub triangles: Vec<[usize; 3]>,
 }
 
 impl Model<Site2D> for TerrainModel2D {
@@ -37,5 +39,9 @@ impl Model<Site2D> for TerrainModel2D {
 
     fn graph(&self) -> &EdgeAttributedUndirectedGraph<Length> {
         &self.graph
+    }
+
+    fn triangles(&self) -> &[[usize; 3]] {
+        &self.triangles
     }
 }
