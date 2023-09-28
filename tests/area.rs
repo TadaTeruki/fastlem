@@ -1,6 +1,6 @@
 use rand::Rng;
-use terrain::base::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
-use terrain::base::units::Model;
+use terrain::lem::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
+use terrain::lem::units::Model;
 extern crate terrain;
 
 #[test]
