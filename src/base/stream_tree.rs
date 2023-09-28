@@ -1,7 +1,7 @@
 use std::collections::BinaryHeap;
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
-use crate::units::{Altitude, Length, Site};
+use crate::base::units::{Altitude, Length, Site};
 
 /// Tree structure for representing the flow of water.
 ///  - `next` is the next site of each site in the flow.

@@ -1,6 +1,6 @@
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
-use crate::{stream_tree, units::Length};
+use crate::base::{stream_tree, units::Length};
 
 /// Represents the drainage basin.
 /// This enables to iterate over the sites in the drainage basin with no duplication.

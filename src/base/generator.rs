@@ -1,8 +1,8 @@
 use crate::{
-    drainage_basin::DrainageBasin,
-    stream_tree,
-    terrain::Terrain,
-    units::{Altitude, Erodibility, Length, Model, Site, Slope, Step, UpliftRate},
+    base::drainage_basin::DrainageBasin,
+    base::stream_tree,
+    base::terrain::Terrain,
+    base::units::{Altitude, Erodibility, Length, Model, Site, Slope, Step, UpliftRate},
 };
 
 /// The default value of the exponent `m` for calculating stream power.
