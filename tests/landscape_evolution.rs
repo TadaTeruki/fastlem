@@ -1,7 +1,7 @@
 use rand::Rng;
 use terrain::core::attributes::TerrainAttributes;
-use terrain::core::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
 use terrain::lem::generator::TerrainGenerator;
+use terrain::models::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
 extern crate terrain;
 
 #[test]
