@@ -5,7 +5,7 @@ use crate::core::{
     units::{Area, Length},
 };
 
-use super::{collection::TriangleCollection2D, sites::Site2D};
+use super::{interpolation::TerrainInterpolator2D, sites::Site2D};
 
 /// A set of fundamental data required for genreating terrain.
 ///
@@ -23,7 +23,7 @@ pub struct TerrainModel2D {
     pub triangles: Vec<[usize; 3]>,
 }
 
-impl Model<Site2D, TriangleCollection2D> for TerrainModel2D {
+impl Model<Site2D, TerrainInterpolator2D> for TerrainModel2D {
     fn num(&self) -> usize {
         self.graph.order()
     }
@@ -44,8 +44,8 @@ impl Model<Site2D, TriangleCollection2D> for TerrainModel2D {
         &self.graph
     }
 
-    fn create_triangle_collection(&self) -> TriangleCollection2D {
-        let mut collection = TriangleCollection2D::new(&self.sites);
+    fn create_interpolator(&self) -> TerrainInterpolator2D {
+        let mut collection = TerrainInterpolator2D::new(&self.sites);
         self.triangles.iter().for_each(|t| {
             collection.insert(*t);
         });

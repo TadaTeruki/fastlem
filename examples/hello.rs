@@ -1,13 +1,13 @@
-use rand::Rng;
+use rand::{Rng, SeedableRng};
 use terrain::core::attributes::TerrainAttributes;
-use terrain::core::traits::{Model, TriangleCollection};
+use terrain::core::traits::{Model, TerrainInterpolator};
 use terrain::lem::generator::TerrainGenerator;
 use terrain::models::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
 extern crate terrain;
 
 fn main() {
     // Number of sites
-    let num = 50000;
+    let num = 30000;
 
     // Bounding box to generate random sites and render terrain data to image
     let bound_min = Site2D { x: 0.0, y: 0.0 };
@@ -17,7 +17,8 @@ fn main() {
     };
 
     // Generate random sites
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rngs::StdRng::seed_from_u64(0);
+
     let sites = (0..num)
         .map(|_| {
             let x = rng.gen_range(bound_min.x..bound_max.x);
@@ -39,7 +40,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let triangle_collection = model.create_triangle_collection();
+    let interpolator = model.create_interpolator();
 
     // `TerrainGenerator` generates a terrain from `TerrainModel`.
     // `TerrainGenerator` requires some paramaters to simulate landscape evolution for each site.
@@ -71,9 +72,9 @@ fn main() {
             let x = bound_max.x * (imgx as f64 / img_width as f64);
             let y = bound_max.y * (imgy as f64 / img_height as f64);
             let site = Site2D { x, y };
-            let triangle = triangle_collection.search(&site);
+            let triangle = interpolator.search(&site);
             if let Some(triangle) = triangle {
-                let inp = triangle_collection.interpolate(triangle, &site);
+                let inp = interpolator.interpolate(triangle, &site);
                 let color = ((terrain.altitudes[triangle[0]] * inp[0]
                     + terrain.altitudes[triangle[1]] * inp[1]
                     + terrain.altitudes[triangle[2]] * inp[2])

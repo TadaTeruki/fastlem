@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use crate::{
     core::{
         attributes::TerrainAttributes,
-        traits::{Model, Site, TriangleCollection},
+        traits::{Model, Site, TerrainInterpolator},
         units::{Altitude, Length, Step},
     },
     lem::drainage_basin::DrainageBasin,
@@ -22,7 +22,7 @@ const DEFAULT_M_EXP: f64 = 0.5;
 /// ### Optional parameters
 ///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the altitudes of all sites are stable.
 ///  - `m_exp` is the constants for calculating stream power. If not set, the default value is 0.5.
-pub struct TerrainGenerator<S: Site, M: Model<S, TC>, TC: TriangleCollection<S>> {
+pub struct TerrainGenerator<S: Site, M: Model<S, TC>, TC: TerrainInterpolator<S>> {
     model: Option<M>,
     attributes: Option<Vec<TerrainAttributes>>,
     max_iteration: Option<Step>,
@@ -31,7 +31,7 @@ pub struct TerrainGenerator<S: Site, M: Model<S, TC>, TC: TriangleCollection<S>>
     _triangle_collection: PhantomData<TC>,
 }
 
-impl<S: Site, M: Model<S, TC>, TC: TriangleCollection<S>> Default for TerrainGenerator<S, M, TC> {
+impl<S: Site, M: Model<S, TC>, TC: TerrainInterpolator<S>> Default for TerrainGenerator<S, M, TC> {
     fn default() -> Self {
         Self {
             model: None,
@@ -44,7 +44,7 @@ impl<S: Site, M: Model<S, TC>, TC: TriangleCollection<S>> Default for TerrainGen
     }
 }
 
-impl<S: Site, M: Model<S, TC>, TC: TriangleCollection<S>> TerrainGenerator<S, M, TC> {
+impl<S: Site, M: Model<S, TC>, TC: TerrainInterpolator<S>> TerrainGenerator<S, M, TC> {
     /// Set the model that contains the set of sites.
     pub fn set_model(mut self, model: M) -> Self {
         self.model = Some(model);

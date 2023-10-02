@@ -1,15 +1,15 @@
 use rtree_rs::{RTree, Rect};
 
-use crate::core::traits::TriangleCollection;
+use crate::core::traits::TerrainInterpolator;
 
 use super::sites::Site2D;
 
-pub struct TriangleCollection2D {
+pub struct TerrainInterpolator2D {
     sites: Vec<Site2D>,
     tree: RTree<2, f64, [usize; 3]>,
 }
 
-impl TriangleCollection2D {
+impl TerrainInterpolator2D {
     pub fn new(sites: &[Site2D]) -> Self {
         Self {
             sites: sites.to_vec(),
@@ -67,7 +67,7 @@ impl TriangleCollection2D {
     }
 }
 
-impl TriangleCollection<Site2D> for TriangleCollection2D {
+impl TerrainInterpolator<Site2D> for TerrainInterpolator2D {
     fn search(&self, site: &Site2D) -> Option<[usize; 3]> {
         self.get_collision(site)
     }
