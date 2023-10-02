@@ -1,5 +1,6 @@
 use rand::Rng;
 use terrain::core::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
+use terrain::lem::attributes::TerrainAttributes;
 use terrain::lem::generator::TerrainGenerator;
 extern crate terrain;
 
@@ -32,9 +33,11 @@ fn test_landscape_evolution() {
 
     let terrain = TerrainGenerator::default()
         .set_model(model)
-        .set_uplift_rate(1e-4 * 5.0)
-        .set_erodibility(1e-7 * 5.61)
-        .set_max_slope(3.14 * 0.1) // radian
+        .set_attributes(
+            (0..num)
+                .map(|_| TerrainAttributes::new(1e-4 * 5.0, 1e-7 * 5.61, 0.0, Some(3.14 * 0.1)))
+                .collect::<_>(),
+        )
         .set_exponent_m(0.5)
         .generate()
         .unwrap();

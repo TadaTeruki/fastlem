@@ -1,9 +1,13 @@
+use std::marker::PhantomData;
+
 use crate::{
-    core::units::{Altitude, Erodibility, Length, Model, Site, Slope, Step, UpliftRate},
+    core::units::{Altitude, Length, Model, Site, Step},
     lem::drainage_basin::DrainageBasin,
     lem::stream_tree,
     lem::terrain::Terrain,
 };
+
+use super::attributes::TerrainAttributes;
 
 /// The default value of the exponent `m` for calculating stream power.
 const DEFAULT_M_EXP: f64 = 0.5;
@@ -12,33 +16,26 @@ const DEFAULT_M_EXP: f64 = 0.5;
 ///
 /// ### Required parameters
 ///  - `model` is the vector representation of the terrain.
-///  - `uplift_rate_func` is the function that calculates uplift rates.
-///  - `erodibility_func` is the function that calculates erodibilities.
+///  - `attributes` is the attributes of sites. Attributes contains uplift rates, erodibilities, base altitudes and maximum slopes (see [TerrainAttributes] for details).
 /// ### Optional parameters
-///  - `base_altitudes` is the base altitudes of sites. If not set, the base altitudes will be set to zero.
-///  - `max_slope_func` is the function that calculates maximum slopes. If not set, the slopes will not be checked. The return value should be always between 0 and pi/2.
 ///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the altitudes of all sites are stable.
 ///  - `m_exp` is the constants for calculating stream power. If not set, the default value is 0.5.
 pub struct TerrainGenerator<S: Site, M: Model<S>> {
     model: Option<M>,
-    uplift_rate_func: Option<Box<dyn Fn(Step, S) -> UpliftRate>>,
-    erodibility_func: Option<Box<dyn Fn(Step, S) -> Erodibility>>,
-    base_altitudes: Option<Vec<Altitude>>,
-    max_slope_func: Option<Box<dyn Fn(Step, S) -> Slope>>,
+    attributes: Option<Vec<TerrainAttributes>>,
     max_iteration: Option<Step>,
     m_exp: Option<f64>,
+    _site: PhantomData<S>,
 }
 
 impl<S: Site, M: Model<S>> Default for TerrainGenerator<S, M> {
     fn default() -> Self {
         Self {
             model: None,
-            uplift_rate_func: None,
-            erodibility_func: None,
-            base_altitudes: None,
-            max_slope_func: None,
+            attributes: None,
             max_iteration: None,
             m_exp: None,
+            _site: PhantomData,
         }
     }
 }
@@ -50,73 +47,10 @@ impl<S: Site, M: Model<S>> TerrainGenerator<S, M> {
         self
     }
 
-    /// Set the base altitudes of sites.
-    pub fn set_base_altitudes(mut self, base_altitudes: Vec<Altitude>) -> Self {
-        self.base_altitudes = Some(base_altitudes);
-        self
-    }
-
-    /// Set the base altitudes of sites by function.
-    pub fn set_base_altitude_by_func(
-        mut self,
-        base_altitude: impl Fn(S) -> Altitude,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
-        let base_altitudes = {
-            if let Some(model) = &self.model {
-                let sites = model.sites();
-                sites.iter().map(|site| base_altitude(*site)).collect()
-            } else {
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "You must set `TerrainModel` before generating terrain",
-                )));
-            }
-        };
-        self.base_altitudes = Some(base_altitudes);
-        Ok(self)
-    }
-
-    /// Set the constant uplift rates.
-    pub fn set_uplift_rate(mut self, uplift_rate: UpliftRate) -> Self {
-        self.uplift_rate_func = Some(Box::new(move |_, _| uplift_rate));
-        self
-    }
-
-    /// Set the function that calculates uplift rates.
-    pub fn set_uplift_rate_func(
-        mut self,
-        uplift_rate_func: Box<dyn Fn(Step, S) -> UpliftRate>,
-    ) -> Self {
-        self.uplift_rate_func = Some(uplift_rate_func);
-        self
-    }
-
-    /// Set the constant erodibilities.
-    pub fn set_erodibility(mut self, erodibility: Erodibility) -> Self {
-        self.erodibility_func = Some(Box::new(move |_, _| erodibility));
-        self
-    }
-
-    /// Set the function that calculates erodibilities.
-    pub fn set_erodibility_func(
-        mut self,
-        erodibility_func: Box<dyn Fn(Step, S) -> Erodibility>,
-    ) -> Self {
-        self.erodibility_func = Some(erodibility_func);
-        self
-    }
-
-    /// Set the constant maximum slopes.
-    /// The slope should be between 0 and pi/2;
-    pub fn set_max_slope(mut self, max_slope: Slope) -> Self {
-        self.max_slope_func = Some(Box::new(move |_, _| max_slope));
-        self
-    }
-
-    /// Set the function that calculates maximum slopes.
-    /// The slope should be always between 0 and pi/2;
-    pub fn set_max_slope_func(mut self, max_slope_func: Box<dyn Fn(Step, S) -> Slope>) -> Self {
-        self.max_slope_func = Some(max_slope_func);
+    /// Set the attributes of sites.
+    /// attributes contains uplift rates, erodibilities, base altitudes and maximum slopes.
+    pub fn set_attributes(mut self, attributes: Vec<TerrainAttributes>) -> Self {
+        self.attributes = Some(attributes);
         self
     }
 
@@ -151,32 +85,13 @@ impl<S: Site, M: Model<S>> TerrainGenerator<S, M> {
             }
         };
 
-        let base_altitudes = {
-            if let Some(base_altitudes) = &self.base_altitudes {
-                base_altitudes.to_vec()
-            } else {
-                vec![0.0; num]
-            }
-        };
-
-        let uplift_rate_func = {
-            if let Some(uplift_rate_func) = &self.uplift_rate_func {
-                uplift_rate_func
+        let attributes = {
+            if let Some(attributes) = &self.attributes {
+                attributes
             } else {
                 return Err(Box::new(std::io::Error::new(
                     std::io::ErrorKind::InvalidInput,
-                    "You must set uplift rate function before generating terrain",
-                )));
-            }
-        };
-
-        let erodibility_func = {
-            if let Some(erodibility_func) = &self.erodibility_func {
-                erodibility_func
-            } else {
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "You must set erodibility function before generating terrain",
+                    "You must set attributes before generating terrain",
                 )));
             }
         };
@@ -190,7 +105,10 @@ impl<S: Site, M: Model<S>> TerrainGenerator<S, M> {
         };
 
         let altitudes: Vec<Altitude> = {
-            let mut altitudes = base_altitudes;
+            let mut altitudes = attributes
+                .iter()
+                .map(|a| a.base_altitude)
+                .collect::<Vec<_>>();
             let mut step = 0;
             loop {
                 let stream_tree =
@@ -224,20 +142,19 @@ impl<S: Site, M: Model<S>> TerrainGenerator<S, M> {
                                 0.0
                             }
                         };
-                        let celerity =
-                            erodibility_func(step, sites[i]) * drainage_areas[i].powf(m_exp);
+                        let celerity = attributes[i].erodibility * drainage_areas[i].powf(m_exp);
                         response_times[i] += response_times[j] + 1.0 / celerity * distance;
                     });
 
                     // calculate altitudes
                     drainage_basin.for_each_upstream(|i| {
                         let mut new_altitude = altitudes[outlet]
-                            + uplift_rate_func(step, sites[i])
+                            + attributes[i].uplift_rate
                                 * (response_times[i] - response_times[outlet]);
 
                         // check if the slope is too steep
                         // if max_slope_func is not set, the slope is not checked
-                        if let Some(max_slope_func) = &self.max_slope_func {
+                        if let Some(max_slope) = attributes[i].max_slope {
                             let j = stream_tree.next[i];
                             let distance: Length = {
                                 let (ok, edge) = graph.has_edge(i, j);
@@ -247,7 +164,7 @@ impl<S: Site, M: Model<S>> TerrainGenerator<S, M> {
                                     1.0
                                 }
                             };
-                            let max_slope = max_slope_func(step, sites[i]).tan();
+                            let max_slope = max_slope.tan();
                             let slope = (new_altitude - altitudes[j]) / distance;
                             if slope > max_slope {
                                 new_altitude = altitudes[j] + max_slope * distance;
