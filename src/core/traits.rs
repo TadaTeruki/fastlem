@@ -10,11 +10,16 @@ pub trait Site: Copy + Clone + Default {
     fn squared_distance(&self, other: &Self) -> Length;
 }
 
-pub trait Model<S: Site> {
+pub trait Model<S: Site, TC: TriangleCollection<S>> {
     fn num(&self) -> usize;
     fn sites(&self) -> &[S];
     fn areas(&self) -> &[Area];
     fn outlets(&self) -> &[usize];
     fn graph(&self) -> &EdgeAttributedUndirectedGraph<Length>;
-    fn triangles(&self) -> &[[usize; 3]];
+    fn create_triangle_collection(&self) -> TC;
+}
+
+pub trait TriangleCollection<S: Site> {
+    fn search(&self, site: &S) -> Option<[usize; 3]>;
+    fn interpolate(&self, triangle: [usize; 3], site: &S) -> [f64; 3];
 }

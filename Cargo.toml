@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 terrain_graph = { git = "https://github.com/TadaTeruki/terrain-graph", version = "0.2" }
+rtree_rs = "0.1"
 voronoice = "0.2"
 
 [dev-dependencies]
