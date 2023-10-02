@@ -1,6 +1,5 @@
 use rand::{Rng, SeedableRng};
 use terrain::core::attributes::TerrainAttributes;
-use terrain::core::traits::{Model, TerrainInterpolator};
 use terrain::lem::generator::TerrainGenerator;
 use terrain::models::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
 extern crate terrain;
@@ -40,8 +39,6 @@ fn main() {
         .build()
         .unwrap();
 
-    let interpolator = model.create_interpolator();
-
     // `TerrainGenerator` generates a terrain from `TerrainModel`.
     // `TerrainGenerator` requires some paramaters to simulate landscape evolution for each site.
     let terrain = TerrainGenerator::default()
@@ -72,14 +69,9 @@ fn main() {
             let x = bound_max.x * (imgx as f64 / img_width as f64);
             let y = bound_max.y * (imgy as f64 / img_height as f64);
             let site = Site2D { x, y };
-            let triangle = interpolator.search(&site);
-            if let Some(triangle) = triangle {
-                let inp = interpolator.interpolate(triangle, &site);
-                let color = ((terrain.altitudes[triangle[0]] * inp[0]
-                    + terrain.altitudes[triangle[1]] * inp[1]
-                    + terrain.altitudes[triangle[2]] * inp[2])
-                    / (max_altitude)
-                    * 255.0) as u8;
+            let altitude = terrain.get_altitude(&site);
+            if let Some(altitude) = altitude {
+                let color = ((altitude / max_altitude) * 255.0) as u8;
                 image_buf.put_pixel(imgx as u32, imgy as u32, image::Rgb([color, color, color]));
             }
         }

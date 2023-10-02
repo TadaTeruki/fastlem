@@ -1,4 +1,4 @@
 pub mod builder;
-pub mod interpolation;
+mod interpolator;
 pub mod model;
 pub mod sites;

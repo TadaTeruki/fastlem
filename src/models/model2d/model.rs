@@ -5,7 +5,7 @@ use crate::core::{
     units::{Area, Length},
 };
 
-use super::{interpolation::TerrainInterpolator2D, sites::Site2D};
+use super::{interpolator::TerrainInterpolator2D, sites::Site2D};
 
 /// A set of fundamental data required for genreating terrain.
 ///
