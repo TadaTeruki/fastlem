@@ -1,4 +1,4 @@
-use crate::core::units::{Altitude, Erodibility, Slope, UpliftRate};
+use super::units::{Altitude, Erodibility, Slope, UpliftRate};
 
 /// Attributes of sites.
 /// The shape of terrain will be determined by these attributes.

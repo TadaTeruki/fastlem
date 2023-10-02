@@ -1,13 +1,14 @@
 use std::marker::PhantomData;
 
 use crate::{
-    core::units::{Altitude, Length, Model, Site, Step},
+    core::{
+        attributes::TerrainAttributes,
+        units::{Altitude, Length, Model, Site, Step},
+    },
     lem::drainage_basin::DrainageBasin,
     lem::stream_tree,
     lem::terrain::Terrain,
 };
-
-use super::attributes::TerrainAttributes;
 
 /// The default value of the exponent `m` for calculating stream power.
 const DEFAULT_M_EXP: f64 = 0.5;

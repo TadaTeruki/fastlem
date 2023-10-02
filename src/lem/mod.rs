@@ -1,4 +1,3 @@
-pub mod attributes;
 pub mod generator;
 
 mod drainage_basin;
