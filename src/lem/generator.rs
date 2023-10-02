@@ -3,7 +3,8 @@ use std::marker::PhantomData;
 use crate::{
     core::{
         attributes::TerrainAttributes,
-        units::{Altitude, Length, Model, Site, Step},
+        traits::{Model, Site},
+        units::{Altitude, Length, Step},
     },
     lem::drainage_basin::DrainageBasin,
     lem::stream_tree,

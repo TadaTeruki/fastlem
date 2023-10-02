@@ -3,7 +3,10 @@ use std::{error, io};
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 use voronoice::{BoundingBox, VoronoiBuilder};
 
-use crate::core::units::{Area, Length, Site};
+use crate::core::{
+    traits::Site,
+    units::{Area, Length},
+};
 
 use super::{model::TerrainModel2D, sites::Site2D};
 

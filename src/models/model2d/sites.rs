@@ -1,4 +1,4 @@
-use crate::core::units::{Length, Site};
+use crate::core::{traits::Site, units::Length};
 
 /// A 2D point in the plane.
 #[derive(Clone, Copy, Debug, Default)]

@@ -1,6 +1,9 @@
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
-use crate::core::units::{Area, Length, Model};
+use crate::core::{
+    traits::Model,
+    units::{Area, Length},
+};
 
 use super::sites::Site2D;
 
