@@ -4,7 +4,10 @@
 .gitignore
 
 # for checking performance using FlameGraph (https://github.com/brendangregg/FlameGraph)
-*.png
+flamegraph.png
 *.svg
 *.data
 *.data.*
+
+# for debugging
+image.png
