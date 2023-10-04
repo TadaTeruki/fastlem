@@ -16,11 +16,29 @@ use super::{interpolator::TerrainInterpolator2D, sites::Site2D};
 /// - `outlets` is the set of outlets.
 /// - `triangles` is the set of triangles created by delaunay triangulation.
 pub struct TerrainModel2D {
-    pub sites: Vec<Site2D>,
-    pub areas: Vec<Area>,
-    pub graph: EdgeAttributedUndirectedGraph<Length>,
-    pub outlets: Vec<usize>,
-    pub triangles: Vec<[usize; 3]>,
+    sites: Vec<Site2D>,
+    areas: Vec<Area>,
+    graph: EdgeAttributedUndirectedGraph<Length>,
+    outlets: Vec<usize>,
+    triangles: Vec<[usize; 3]>,
+}
+
+impl TerrainModel2D {
+    pub fn new(
+        sites: Vec<Site2D>,
+        areas: Vec<Area>,
+        graph: EdgeAttributedUndirectedGraph<Length>,
+        outlets: Vec<usize>,
+        triangles: Vec<[usize; 3]>,
+    ) -> Self {
+        Self {
+            sites,
+            areas,
+            graph,
+            outlets,
+            triangles,
+        }
+    }
 }
 
 impl Model<Site2D, TerrainInterpolator2D> for TerrainModel2D {

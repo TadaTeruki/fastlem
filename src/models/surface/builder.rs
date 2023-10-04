@@ -190,13 +190,13 @@ impl TerrainModel2DBulider {
                 .map(|t| [t[0], t[1], t[2]])
                 .collect();
 
-            Ok(TerrainModel2D {
-                sites: sites.to_vec(),
+            Ok(TerrainModel2D::new(
+                sites.to_vec(),
                 areas,
                 graph,
                 outlets,
                 triangles,
-            })
+            ))
         } else {
             Err(Box::new(io::Error::new(
                 io::ErrorKind::InvalidInput,
