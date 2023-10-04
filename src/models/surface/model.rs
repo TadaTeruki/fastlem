@@ -24,7 +24,7 @@ pub struct TerrainModel2D {
 }
 
 impl TerrainModel2D {
-    pub fn new(
+    pub(super) fn new(
         sites: Vec<Site2D>,
         areas: Vec<Area>,
         graph: EdgeAttributedUndirectedGraph<Length>,
