@@ -1,7 +1,7 @@
 use rand::{Rng, SeedableRng};
 use terrain::core::attributes::TerrainAttributes;
 use terrain::lem::generator::TerrainGenerator;
-use terrain::models::model2d::{builder::TerrainModel2DBulider, sites::Site2D};
+use terrain::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 extern crate terrain;
 
 fn main() {
