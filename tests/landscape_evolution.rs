@@ -42,8 +42,8 @@ fn test_landscape_evolution() {
         .generate()
         .unwrap();
 
-    let sites = terrain.sites;
-    let altitudes = terrain.altitudes;
+    let sites = terrain.sites();
+    let altitudes = terrain.altitudes();
 
     let image = terrain_visualizer::Visualizer::new(
         sites

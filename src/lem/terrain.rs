@@ -9,8 +9,8 @@ use crate::core::{
 /// - `altitudes` is the set of altitudes.
 #[derive(Default)]
 pub struct Terrain<S: Site, I: TerrainInterpolator<S>> {
-    pub sites: Vec<S>,
-    pub altitudes: Vec<Altitude>,
+    sites: Vec<S>,
+    altitudes: Vec<Altitude>,
     interpolator: I,
 }
 
@@ -23,16 +23,15 @@ impl<S: Site, I: TerrainInterpolator<S>> Terrain<S, I> {
         }
     }
 
+    pub fn sites(&self) -> &[S] {
+        &self.sites
+    }
+
+    pub fn altitudes(&self) -> &[Altitude] {
+        &self.altitudes
+    }
+
     pub fn get_altitude(&self, site: &S) -> Option<Altitude> {
-        let triangle = self.interpolator.search(site);
-        if let Some(triangle) = triangle {
-            let interpolation = self.interpolator.interpolate(triangle, site);
-            let altitude = self.altitudes[triangle[0]] * interpolation[0]
-                + self.altitudes[triangle[1]] * interpolation[1]
-                + self.altitudes[triangle[2]] * interpolation[2];
-            Some(altitude)
-        } else {
-            None
-        }
+        self.interpolator.interpolate(&self.altitudes, site)
     }
 }

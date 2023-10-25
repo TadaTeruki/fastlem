@@ -1,3 +1,5 @@
+use naturalneighbor::Point;
+
 use crate::core::{traits::Site, units::Length};
 
 /// A 2D point in the plane.
@@ -5,6 +7,15 @@ use crate::core::{traits::Site, units::Length};
 pub struct Site2D {
     pub x: Length,
     pub y: Length,
+}
+
+impl From<Site2D> for Point {
+    fn from(site: Site2D) -> Self {
+        Self {
+            x: site.x,
+            y: site.y,
+        }
+    }
 }
 
 impl Site2D {

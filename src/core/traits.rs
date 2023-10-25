@@ -1,6 +1,6 @@
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
-use super::units::{Area, Length};
+use super::units::{Altitude, Area, Length};
 
 pub trait Site: Copy + Clone + Default {
     /// Calculate the distance between two sites.
@@ -20,6 +20,5 @@ pub trait Model<S: Site, I: TerrainInterpolator<S>> {
 }
 
 pub trait TerrainInterpolator<S: Site> {
-    fn search(&self, site: &S) -> Option<[usize; 3]>;
-    fn interpolate(&self, triangle: [usize; 3], site: &S) -> [f64; 3];
+    fn interpolate(&self, altitudes: &[Altitude], site: &S) -> Option<Altitude>;
 }

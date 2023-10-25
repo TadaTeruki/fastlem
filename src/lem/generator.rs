@@ -22,29 +22,46 @@ const DEFAULT_M_EXP: f64 = 0.5;
 /// ### Optional parameters
 ///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the altitudes of all sites are stable.
 ///  - `m_exp` is the constants for calculating stream power. If not set, the default value is 0.5.
-pub struct TerrainGenerator<S: Site, M: Model<S, I>, I: TerrainInterpolator<S>> {
+///
+//S: Site, M: Model<S, I>> {
+pub struct TerrainGenerator<S, M, I>
+where
+    S: Site,
+    M: Model<S, I>,
+    I: TerrainInterpolator<S>,
+{
     model: Option<M>,
     attributes: Option<Vec<TerrainAttributes>>,
     max_iteration: Option<Step>,
     m_exp: Option<f64>,
-    _interpolator: PhantomData<I>,
     _site: PhantomData<S>,
+    _interpolator: PhantomData<I>,
 }
 
-impl<S: Site, M: Model<S, I>, I: TerrainInterpolator<S>> Default for TerrainGenerator<S, M, I> {
+impl<S, M, I> Default for TerrainGenerator<S, M, I>
+where
+    S: Site,
+    M: Model<S, I>,
+    I: TerrainInterpolator<S>,
+{
     fn default() -> Self {
         Self {
             model: None,
             attributes: None,
             max_iteration: None,
             m_exp: None,
-            _interpolator: PhantomData,
             _site: PhantomData,
+            _interpolator: PhantomData,
         }
     }
 }
 
-impl<S: Site, M: Model<S, I>, I: TerrainInterpolator<S>> TerrainGenerator<S, M, I> {
+impl<S, M, I> TerrainGenerator<S, M, I>
+where
+    S: Site,
+    M: Model<S, I>,
+    I: TerrainInterpolator<S>,
+{
     /// Set the model that contains the set of sites.
     pub fn set_model(mut self, model: M) -> Self {
         self.model = Some(model);
@@ -72,16 +89,9 @@ impl<S: Site, M: Model<S, I>, I: TerrainInterpolator<S>> TerrainGenerator<S, M, 
 
     /// Generate terrain.
     pub fn generate(&self) -> Result<Terrain<S, I>, Box<dyn std::error::Error>> {
-        let (num, sites, areas, graph, outlets, interpolator) = {
+        let model = {
             if let Some(model) = &self.model {
-                (
-                    model.num(),
-                    model.sites(),
-                    model.areas(),
-                    model.graph(),
-                    model.outlets(),
-                    model.create_interpolator(),
-                )
+                model
             } else {
                 return Err(Box::new(std::io::Error::new(
                     std::io::ErrorKind::InvalidInput,
@@ -89,6 +99,14 @@ impl<S: Site, M: Model<S, I>, I: TerrainInterpolator<S>> TerrainGenerator<S, M, 
                 )));
             }
         };
+
+        let (num, sites, areas, graph, outlets) = (
+            model.num(),
+            model.sites(),
+            model.areas(),
+            model.graph(),
+            model.outlets(),
+        );
 
         let attributes = {
             if let Some(attributes) = &self.attributes {
@@ -196,6 +214,10 @@ impl<S: Site, M: Model<S, I>, I: TerrainInterpolator<S>> TerrainGenerator<S, M, 
             altitudes
         };
 
-        Ok(Terrain::new(sites.to_vec(), altitudes, interpolator))
+        Ok(Terrain::new(
+            sites.to_vec(),
+            altitudes,
+            model.create_interpolator(),
+        ))
     }
 }

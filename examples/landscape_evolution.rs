@@ -60,7 +60,7 @@ fn main() {
 
     let mut image_buf = image::RgbImage::new(img_width, img_height);
     let max_altitude = terrain
-        .altitudes
+        .altitudes()
         .iter()
         .fold(std::f64::MIN, |acc, &n| n.max(acc));
 

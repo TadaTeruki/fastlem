@@ -20,7 +20,6 @@ pub struct TerrainModel2D {
     areas: Vec<Area>,
     graph: EdgeAttributedUndirectedGraph<Length>,
     outlets: Vec<usize>,
-    triangles: Vec<[usize; 3]>,
 }
 
 impl TerrainModel2D {
@@ -29,14 +28,12 @@ impl TerrainModel2D {
         areas: Vec<Area>,
         graph: EdgeAttributedUndirectedGraph<Length>,
         outlets: Vec<usize>,
-        triangles: Vec<[usize; 3]>,
     ) -> Self {
         Self {
             sites,
             areas,
             graph,
             outlets,
-            triangles,
         }
     }
 }
@@ -63,10 +60,6 @@ impl Model<Site2D, TerrainInterpolator2D> for TerrainModel2D {
     }
 
     fn create_interpolator(&self) -> TerrainInterpolator2D {
-        let mut collection = TerrainInterpolator2D::new(&self.sites);
-        self.triangles.iter().for_each(|t| {
-            collection.insert(*t);
-        });
-        collection
+        TerrainInterpolator2D::new(&self.sites)
     }
 }
