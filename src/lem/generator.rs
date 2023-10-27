@@ -110,6 +110,12 @@ where
 
         let attributes = {
             if let Some(attributes) = &self.attributes {
+                if attributes.len() != num {
+                    return Err(Box::new(std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        "The number of attributes must be equal to the number of sites",
+                    )));
+                }
                 attributes
             } else {
                 return Err(Box::new(std::io::Error::new(
