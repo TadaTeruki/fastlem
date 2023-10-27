@@ -48,7 +48,6 @@ fn main() {
                 .map(|_| TerrainAttributes::new(1e-4 * 5.0, 1e-7 * 5.61, 0.0, Some(3.14 * 0.3)))
                 .collect::<_>(),
         )
-        .set_exponent_m(0.5)
         .generate()
         .unwrap();
 
