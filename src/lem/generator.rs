@@ -63,32 +63,40 @@ where
     I: TerrainInterpolator<S>,
 {
     /// Set the model that contains the set of sites.
-    pub fn set_model(mut self, model: M) -> Self {
-        self.model = Some(model);
-        self
+    pub fn set_model(self, model: M) -> Self {
+        Self {
+            model: Some(model),
+            ..self
+        }
     }
 
     /// Set the attributes of sites.
     /// attributes contains uplift rates, erodibilities, base altitudes and maximum slopes.
-    pub fn set_attributes(mut self, attributes: Vec<TerrainAttributes>) -> Self {
-        self.attributes = Some(attributes);
-        self
+    pub fn set_attributes(self, attributes: Vec<TerrainAttributes>) -> Self {
+        Self {
+            attributes: Some(attributes),
+            ..self
+        }
     }
 
     /// Set the maximum number of iterations.
-    pub fn set_max_iteration(mut self, max_iteration: Step) -> Self {
-        self.max_iteration = Some(max_iteration);
-        self
+    pub fn set_max_iteration(self, max_iteration: Step) -> Self {
+        Self {
+            max_iteration: Some(max_iteration),
+            ..self
+        }
     }
 
     /// Set the exponent `m` for calculating stream power.
-    pub fn set_exponent_m(mut self, m_exp: f64) -> Self {
-        self.m_exp = Some(m_exp);
-        self
+    pub fn set_exponent_m(self, m_exp: f64) -> Self {
+        Self {
+            m_exp: Some(m_exp),
+            ..self
+        }
     }
 
     /// Generate terrain.
-    pub fn generate(&self) -> Result<Terrain<S, I>, Box<dyn std::error::Error>> {
+    pub fn generate(self) -> Result<Terrain<S, I>, Box<dyn std::error::Error>> {
         let model = {
             if let Some(model) = &self.model {
                 model
@@ -179,7 +187,7 @@ where
                     drainage_basin.for_each_upstream(|i| {
                         let mut new_altitude = altitudes[outlet]
                             + attributes[i].uplift_rate
-                                * (response_times[i] - response_times[outlet]);
+                                * (response_times[i] - response_times[outlet]).max(0.0);
 
                         // check if the slope is too steep
                         // if max_slope_func is not set, the slope is not checked

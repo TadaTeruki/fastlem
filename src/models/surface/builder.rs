@@ -34,28 +34,28 @@ pub struct TerrainModel2DBulider {
 
 impl TerrainModel2DBulider {
     /// Set sites.
-    pub fn set_sites(mut self, sites: Vec<Site2D>) -> Self {
-        self.sites = Some(sites);
-        self
+    pub fn set_sites(self, sites: Vec<Site2D>) -> Self {
+        Self {
+            sites: Some(sites),
+            ..self
+        }
     }
 
     /// Set the bounding rectangle of the sites.
     ///
     /// If `bound_min` and `bound_max` is `None`, the bounding rectangle will be
     /// computed from the sites.
-    pub fn set_bounding_box(
-        mut self,
-        bound_min: Option<Site2D>,
-        bound_max: Option<Site2D>,
-    ) -> Result<Self, Box<dyn error::Error>> {
-        self.bound_min = bound_min;
-        self.bound_max = bound_max;
-        Ok(self)
+    pub fn set_bounding_box(self, bound_min: Option<Site2D>, bound_max: Option<Site2D>) -> Self {
+        Self {
+            bound_min,
+            bound_max,
+            ..self
+        }
     }
 
     /// Relocate the sites to apploximately evenly spaced positions using Lloyd's algorithm.
     /// The number of iterations for Lloyd's algorithm is specified by `iterations`.
-    pub fn iterate_sites(mut self, iterations: usize) -> Result<Self, Box<dyn error::Error>> {
+    pub fn iterate_sites(self, iterations: usize) -> Result<Self, Box<dyn error::Error>> {
         if iterations == 0 {
             return Ok(self);
         }
@@ -63,7 +63,7 @@ impl TerrainModel2DBulider {
         let (bound_min, bound_max) = (self.query_bound_min()?, self.query_bound_max()?);
 
         let sites = {
-            if let Some(sites) = &mut self.sites {
+            if let Some(sites) = &self.sites {
                 sites
             } else {
                 return Err(Box::new(io::Error::new(
@@ -92,22 +92,29 @@ impl TerrainModel2DBulider {
             .build();
 
         if let Some(voronoi) = voronoi_opt {
-            self.sites = Some(
-                voronoi
-                    .sites()
-                    .iter()
-                    .map(|s| Site2D { x: s.x, y: s.y })
-                    .collect::<Vec<Site2D>>(),
-            );
+            return Ok(Self {
+                sites: Some(
+                    voronoi
+                        .sites()
+                        .iter()
+                        .map(|s| Site2D { x: s.x, y: s.y })
+                        .collect::<Vec<Site2D>>(),
+                ),
+                ..self
+            });
         }
 
         Ok(self)
     }
 
     /// Set the custom outlets of sites.
-    pub fn set_custom_outlets(mut self, custom_outlets: Vec<usize>) -> Self {
-        self.custom_outlets = Some(custom_outlets);
-        self
+    pub fn set_custom_outlets(self, custom_outlets: Vec<usize>) -> Self {
+        //self.custom_outlets = Some(custom_outlets);
+        //self
+        Self {
+            custom_outlets: Some(custom_outlets),
+            ..self
+        }
     }
 
     pub fn build(&self) -> Result<TerrainModel2D, Box<dyn error::Error>> {

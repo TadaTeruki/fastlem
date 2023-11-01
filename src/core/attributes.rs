@@ -18,15 +18,15 @@ pub struct TerrainAttributes {
 
 impl TerrainAttributes {
     pub fn new(
+        base_altitude: Altitude,
         uplift_rate: UpliftRate,
         erodibility: Erodibility,
-        base_altitude: Altitude,
         max_slope: Option<Slope>,
     ) -> Self {
         Self {
+            base_altitude,
             uplift_rate,
             erodibility,
-            base_altitude,
             max_slope,
         }
     }

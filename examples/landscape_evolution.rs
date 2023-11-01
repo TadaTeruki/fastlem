@@ -33,7 +33,6 @@ fn main() {
     let model = TerrainModel2DBulider::default()
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
-        .unwrap()
         .iterate_sites(1)
         .unwrap()
         .build()
@@ -45,7 +44,7 @@ fn main() {
         .set_model(model)
         .set_attributes(
             (0..num)
-                .map(|_| TerrainAttributes::new(1e-4 * 5.0, 1e-7 * 5.61, 0.0, Some(3.14 * 0.3)))
+                .map(|_| TerrainAttributes::new(0.0, 1e-4 * 5.0, 1e-7 * 5.61, Some(3.14 * 0.3)))
                 .collect::<_>(),
         )
         .generate()
