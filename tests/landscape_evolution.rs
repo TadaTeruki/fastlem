@@ -1,8 +1,8 @@
+use procedural_terrain::core::attributes::TerrainAttributes;
+use procedural_terrain::lem::generator::TerrainGenerator;
+use procedural_terrain::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use rand::Rng;
-use terrain::core::attributes::TerrainAttributes;
-use terrain::lem::generator::TerrainGenerator;
-use terrain::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
-extern crate terrain;
+extern crate procedural_terrain;
 
 #[test]
 fn test_landscape_evolution() {

@@ -1,5 +1,5 @@
 [package]
-name = "terrain"
+name = "procedural-terrain"
 version = "0.1.0"
 edition = "2021"
 
@@ -14,4 +14,5 @@ naturalneighbor = "1.1"
 [dev-dependencies]
 rand = "0.8"
 image = "0.24"
+noise = {version = "0.8.2", features = ["images"]}
 terrain_visualizer = { git = "https://github.com/TadaTeruki/terrain-visualizer" }

@@ -1,6 +1,6 @@
-# terrain-rs
+# procedural-terrain-rs
 
-Generates Realistic Terrain based on Landscape Evolution Model(LEM)
+Generates Terrain based on Landscape Evolution Model(LEM)
 
 **Note**: This project is now in development. During `0.1.*`, the interface may change a lot.
 
@@ -9,7 +9,7 @@ Generates Realistic Terrain based on Landscape Evolution Model(LEM)
 **Simple Landscape Evolution**
 
 ```
-$ cargo run --example landscape_evolution
+$ cargo run --example landscape_evolution --release
 ```
 
-![Simple Landscape Evolution](images/landscape_evolution.png)
+![Simple Landscape Evolution](images/out/landscape_evolution.png)

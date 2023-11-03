@@ -1,7 +1,7 @@
+use procedural_terrain::core::traits::Model;
+use procedural_terrain::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use rand::Rng;
-use terrain::core::traits::Model;
-use terrain::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
-extern crate terrain;
+extern crate procedural_terrain;
 
 #[test]
 fn test_terrain_generation() {
