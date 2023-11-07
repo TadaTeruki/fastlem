@@ -1,26 +1,22 @@
-use naturalneighbor::{Interpolator, Point};
-
-use crate::core::{traits::TerrainInterpolator, units::Altitude};
+use crate::core::units::Altitude;
 
 use super::sites::Site2D;
 
 pub struct TerrainInterpolator2D {
-    interpolator: Interpolator,
+    interpolator: naturalneighbor::Interpolator,
 }
 
 impl TerrainInterpolator2D {
     pub fn new(sites: &[Site2D]) -> Self {
         Self {
-            interpolator: Interpolator::new(sites),
+            interpolator: naturalneighbor::Interpolator::new(sites),
         }
     }
-}
 
-impl TerrainInterpolator<Site2D> for TerrainInterpolator2D {
-    fn interpolate(&self, altitudes: &[Altitude], site: &Site2D) -> Option<Altitude> {
+    pub fn interpolate(&self, altitudes: &[Altitude], site: &Site2D) -> Option<Altitude> {
         self.interpolator.interpolate(
             altitudes,
-            Point {
+            naturalneighbor::Point {
                 x: site.x,
                 y: site.y,
             },

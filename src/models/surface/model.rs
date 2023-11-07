@@ -2,10 +2,10 @@ use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
 use crate::core::{
     traits::Model,
-    units::{Area, Length},
+    units::{Altitude, Area, Length},
 };
 
-use super::{interpolator::TerrainInterpolator2D, sites::Site2D};
+use super::{interpolator::TerrainInterpolator2D, sites::Site2D, terrain::Terrain2D};
 
 /// A set of fundamental data required for genreating terrain.
 ///
@@ -38,7 +38,7 @@ impl TerrainModel2D {
     }
 }
 
-impl Model<Site2D, TerrainInterpolator2D> for TerrainModel2D {
+impl Model<Site2D, Terrain2D> for TerrainModel2D {
     fn num(&self) -> usize {
         self.graph.order()
     }
@@ -59,7 +59,11 @@ impl Model<Site2D, TerrainInterpolator2D> for TerrainModel2D {
         &self.graph
     }
 
-    fn create_interpolator(&self) -> TerrainInterpolator2D {
-        TerrainInterpolator2D::new(&self.sites)
+    fn create_terrain_from_result(&self, altitudes: &[Altitude]) -> Terrain2D {
+        Terrain2D::new(
+            self.sites.clone(),
+            altitudes.to_vec(),
+            TerrainInterpolator2D::new(&self.sites),
+        )
     }
 }

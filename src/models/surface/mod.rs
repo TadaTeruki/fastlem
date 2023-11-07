@@ -1,4 +1,6 @@
 pub mod builder;
-mod interpolator;
 pub mod model;
 pub mod sites;
+pub mod terrain;
+
+mod interpolator;

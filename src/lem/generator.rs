@@ -3,12 +3,11 @@ use std::marker::PhantomData;
 use crate::{
     core::{
         attributes::TerrainAttributes,
-        traits::{Model, Site, TerrainInterpolator},
+        traits::{Model, Site},
         units::{Altitude, Length, Step},
     },
     lem::drainage_basin::DrainageBasin,
     lem::stream_tree,
-    lem::terrain::Terrain,
 };
 
 /// The default value of the exponent `m` for calculating stream power.
@@ -23,26 +22,22 @@ const DEFAULT_M_EXP: f64 = 0.5;
 ///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the altitudes of all sites are stable.
 ///  - `m_exp` is the constants for calculating stream power. If not set, the default value is 0.5.
 ///
-//S: Site, M: Model<S, I>> {
-pub struct TerrainGenerator<S, M, I>
+pub struct TerrainGenerator<S, M, T>
 where
     S: Site,
-    M: Model<S, I>,
-    I: TerrainInterpolator<S>,
+    M: Model<S, T>,
 {
     model: Option<M>,
     attributes: Option<Vec<TerrainAttributes>>,
     max_iteration: Option<Step>,
     m_exp: Option<f64>,
-    _site: PhantomData<S>,
-    _interpolator: PhantomData<I>,
+    _phantom: PhantomData<(S, T)>,
 }
 
-impl<S, M, I> Default for TerrainGenerator<S, M, I>
+impl<S, M, T> Default for TerrainGenerator<S, M, T>
 where
     S: Site,
-    M: Model<S, I>,
-    I: TerrainInterpolator<S>,
+    M: Model<S, T>,
 {
     fn default() -> Self {
         Self {
@@ -50,17 +45,15 @@ where
             attributes: None,
             max_iteration: None,
             m_exp: None,
-            _site: PhantomData,
-            _interpolator: PhantomData,
+            _phantom: PhantomData,
         }
     }
 }
 
-impl<S, M, I> TerrainGenerator<S, M, I>
+impl<S, M, T> TerrainGenerator<S, M, T>
 where
     S: Site,
-    M: Model<S, I>,
-    I: TerrainInterpolator<S>,
+    M: Model<S, T>,
 {
     /// Set the model that contains the set of sites.
     pub fn set_model(self, model: M) -> Self {
@@ -96,7 +89,7 @@ where
     }
 
     /// Generate terrain.
-    pub fn generate(self) -> Result<Terrain<S, I>, Box<dyn std::error::Error>> {
+    pub fn generate(self) -> Result<T, Box<dyn std::error::Error>> {
         let model = {
             if let Some(model) = &self.model {
                 model
@@ -228,10 +221,6 @@ where
             altitudes
         };
 
-        Ok(Terrain::new(
-            sites.to_vec(),
-            altitudes,
-            model.create_interpolator(),
-        ))
+        Ok(model.create_terrain_from_result(&altitudes))
     }
 }

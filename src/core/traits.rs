@@ -10,15 +10,11 @@ pub trait Site: Copy + Clone + Default {
     fn squared_distance(&self, other: &Self) -> Length;
 }
 
-pub trait Model<S: Site, I: TerrainInterpolator<S>> {
+pub trait Model<S: Site, T> {
     fn num(&self) -> usize;
     fn sites(&self) -> &[S];
     fn areas(&self) -> &[Area];
     fn outlets(&self) -> &[usize];
     fn graph(&self) -> &EdgeAttributedUndirectedGraph<Length>;
-    fn create_interpolator(&self) -> I;
-}
-
-pub trait TerrainInterpolator<S: Site> {
-    fn interpolate(&self, altitudes: &[Altitude], site: &S) -> Option<Altitude>;
+    fn create_terrain_from_result(&self, altitude: &[Altitude]) -> T;
 }
