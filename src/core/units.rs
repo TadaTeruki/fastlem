@@ -7,7 +7,7 @@ pub type Altitude = f64;
 /// Uplift rate (unit: L/T).
 pub type UpliftRate = f64;
 
-/// Erodibility (unit: 1/T).
+/// Erodibility.
 pub type Erodibility = f64;
 
 /// Area (unit: L^2).
