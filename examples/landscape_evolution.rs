@@ -44,7 +44,7 @@ fn main() {
         .set_model(model)
         .set_attributes(
             (0..num)
-                .map(|_| TerrainAttributes::new(0.0, 1., 1., None))
+                .map(|_| TerrainAttributes::default().set_erodibility(1.0))
                 .collect::<_>(),
         )
         .generate()

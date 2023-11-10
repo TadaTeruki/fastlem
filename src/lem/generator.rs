@@ -64,7 +64,6 @@ where
     }
 
     /// Set the attributes of sites.
-    /// attributes contains uplift rates, erodibilities, base altitudes and maximum slopes.
     pub fn set_attributes(self, attributes: Vec<TerrainAttributes>) -> Self {
         Self {
             attributes: Some(attributes),
@@ -73,6 +72,9 @@ where
     }
 
     /// Set the maximum number of iterations.
+    ///
+    /// The iteration(loop) for calculating altitudes will be stopped when the number of iterations reaches `max_iteration`.
+    /// If not set, the iterations will be repeated until the altitudes of all sites are stable.
     pub fn set_max_iteration(self, max_iteration: Step) -> Self {
         Self {
             max_iteration: Some(max_iteration),
@@ -81,6 +83,9 @@ where
     }
 
     /// Set the exponent `m` for calculating stream power.
+    /// The default value is 0.5.
+    ///
+    /// Note: This is an advanced parameter.
     pub fn set_exponent_m(self, m_exp: f64) -> Self {
         Self {
             m_exp: Some(m_exp),

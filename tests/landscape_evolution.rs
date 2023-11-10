@@ -34,7 +34,13 @@ fn test_landscape_evolution() {
         .set_model(model)
         .set_attributes(
             (0..num)
-                .map(|_| TerrainAttributes::new(0.0, 1.0, 1.0, Some(3.14 * 0.1)))
+                .map(|_| {
+                    TerrainAttributes::default()
+                        .set_base_altitude(0.0)
+                        .set_erodibility(1.0)
+                        .set_uplift_rate(1.0)
+                        .set_max_slope(Some(3.14 * 0.1))
+                })
                 .collect::<_>(),
         )
         .set_exponent_m(0.5)
