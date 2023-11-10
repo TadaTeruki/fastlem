@@ -2,6 +2,9 @@
 name = "fastlem"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "A Rust library for generating procedural terrains based on simplified landscape evolution model (LEM)"
+authors = ["Teruki TADA <tadateruki.public@gmail.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -9,10 +12,9 @@ edition = "2021"
 rtree_rs = "0.1"
 voronoice = "0.2"
 terrain-graph = "1.0"
-naturalneighbor = { git = "https://github.com/TadaTeruki/naturalneighbor" }
+naturalneighbor = "1.1"
 
 [dev-dependencies]
 rand = "0.8"
 image = "0.24"
-noise = {version = "0.8.2", features = ["images"]}
 terrain_visualizer = { git = "https://github.com/TadaTeruki/terrain-visualizer" }
