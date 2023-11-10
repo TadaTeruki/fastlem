@@ -1,7 +1,7 @@
-use procedural_terrain::core::traits::Model;
-use procedural_terrain::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
+use fastlem::core::traits::Model;
+use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use rand::Rng;
-extern crate procedural_terrain;
+extern crate fastlem;
 
 #[test]
 fn test_terrain_generation() {

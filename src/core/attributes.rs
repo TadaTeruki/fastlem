@@ -2,7 +2,6 @@ use super::units::{Altitude, Erodibility, Slope, UpliftRate};
 
 /// Attributes of sites.
 /// The shape of terrain will be determined by these attributes.
-/// I refer https://doi.org/10.5194/esurf-9-1239-2021 to define these attributes. See the paper how these attributes affect the shape of terrain.
 /// ### Attributes
 ///  - `uplift_rate` is the uplift rate (unit: L/T).
 ///  - `erodibility` is the erodibility.

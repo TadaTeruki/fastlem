@@ -1,8 +1,8 @@
-use procedural_terrain::core::attributes::TerrainAttributes;
-use procedural_terrain::lem::generator::TerrainGenerator;
-use procedural_terrain::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
+use fastlem::core::attributes::TerrainAttributes;
+use fastlem::lem::generator::TerrainGenerator;
+use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use rand::{Rng, SeedableRng};
-extern crate procedural_terrain;
+extern crate fastlem;
 
 fn main() {
     // Number of sites

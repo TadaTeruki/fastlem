@@ -1,5 +1,5 @@
 [package]
-name = "procedural-terrain"
+name = "fastlem"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,7 +9,7 @@ edition = "2021"
 rtree_rs = "0.1"
 voronoice = "0.2"
 terrain-graph = "1.0"
-naturalneighbor = "1.1"
+naturalneighbor = { git = "https://github.com/TadaTeruki/naturalneighbor" }
 
 [dev-dependencies]
 rand = "0.8"
