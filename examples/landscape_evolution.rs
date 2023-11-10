@@ -11,8 +11,8 @@ fn main() {
     // Bounding box to generate random sites and render terrain data to image
     let bound_min = Site2D { x: 0.0, y: 0.0 };
     let bound_max = Site2D {
-        x: 200.0 * 1e3, // 200 km
-        y: 200.0 * 1e3, // 200 km
+        x: 200.0, // 200 km
+        y: 200.0, // 200 km
     };
 
     // Generate random sites
@@ -44,7 +44,7 @@ fn main() {
         .set_model(model)
         .set_attributes(
             (0..num)
-                .map(|_| TerrainAttributes::new(0.0, 1e-4 * 5.0, 1e-7 * 5.61, Some(3.14 * 0.3)))
+                .map(|_| TerrainAttributes::new(0.0, 1., 1., None))
                 .collect::<_>(),
         )
         .generate()

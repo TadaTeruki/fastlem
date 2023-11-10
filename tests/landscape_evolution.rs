@@ -9,8 +9,8 @@ fn test_landscape_evolution() {
     let num = 10000;
     let bound_min = Site2D { x: 0.0, y: 0.0 };
     let bound_max = Site2D {
-        x: 200.0 * 1e3, // 200 km
-        y: 100.0 * 1e3, // 100 km
+        x: 200.0, // 200 km
+        y: 100.0, // 100 km
     };
 
     let mut sites = Vec::with_capacity(num);
@@ -34,7 +34,7 @@ fn test_landscape_evolution() {
         .set_model(model)
         .set_attributes(
             (0..num)
-                .map(|_| TerrainAttributes::new(0.0, 1e-4 * 5.0, 1e-7 * 5.61, Some(3.14 * 0.1)))
+                .map(|_| TerrainAttributes::new(0.0, 1.0, 1.0, Some(3.14 * 0.1)))
                 .collect::<_>(),
         )
         .set_exponent_m(0.5)
