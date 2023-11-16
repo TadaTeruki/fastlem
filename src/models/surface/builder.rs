@@ -12,9 +12,6 @@ use super::{model::TerrainModel2D, sites::Site2D};
 
 /// Default margin for bounding box.
 /// This value is used when the bounding box is calculated from the minimum and maximum values of the sites.
-///
-/// **TODO**: This value should be deprecated but it is still defined to avoid a bug. The reason of the bug should be investigated.
-const DEFAULT_BOUDNING_BOX_MARGIN: f64 = 1e-9;
 
 #[derive(Error, Debug)]
 pub enum ModelBuilderError {
@@ -212,8 +209,8 @@ impl TerrainModel2DBulider {
                     y: std::f64::MAX,
                 },
                 |acc, s| Site2D {
-                    x: acc.x.min(s.x) - DEFAULT_BOUDNING_BOX_MARGIN,
-                    y: acc.y.min(s.y) - DEFAULT_BOUDNING_BOX_MARGIN,
+                    x: acc.x.min(s.x),
+                    y: acc.y.min(s.y),
                 },
             );
             Ok(bound_min)
@@ -232,8 +229,8 @@ impl TerrainModel2DBulider {
                     y: std::f64::MIN,
                 },
                 |acc, s| Site2D {
-                    x: acc.x.max(s.x) + DEFAULT_BOUDNING_BOX_MARGIN,
-                    y: acc.y.max(s.y) + DEFAULT_BOUDNING_BOX_MARGIN,
+                    x: acc.x.max(s.x),
+                    y: acc.y.max(s.y),
                 },
             );
             Ok(bound_max)
