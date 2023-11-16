@@ -21,7 +21,7 @@ fn test_terrain_generation() {
     let model = TerrainModel2DBulider::default()
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
-        .iterate_sites(1)
+        .relaxate_sites(1)
         .unwrap()
         .build()
         .unwrap();

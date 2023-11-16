@@ -15,11 +15,12 @@ use super::{interpolator::TerrainInterpolator2D, sites::Site2D, terrain::Terrain
 /// - `graph` is the graph representing the conecctions between sites.
 /// - `outlets` is the set of outlets.
 /// - `triangles` is the set of triangles created by delaunay triangulation.
+/// - `default_outlets` is the set of indices of sites that are set as outlets by default.
 pub struct TerrainModel2D {
     sites: Vec<Site2D>,
     areas: Vec<Area>,
     graph: EdgeAttributedUndirectedGraph<Length>,
-    outlets: Vec<usize>,
+    default_outlets: Vec<usize>,
 }
 
 impl TerrainModel2D {
@@ -27,13 +28,13 @@ impl TerrainModel2D {
         sites: Vec<Site2D>,
         areas: Vec<Area>,
         graph: EdgeAttributedUndirectedGraph<Length>,
-        outlets: Vec<usize>,
+        default_outlets: Vec<usize>,
     ) -> Self {
         Self {
             sites,
             areas,
             graph,
-            outlets,
+            default_outlets,
         }
     }
 }
@@ -51,8 +52,8 @@ impl Model<Site2D, Terrain2D> for TerrainModel2D {
         &self.areas
     }
 
-    fn outlets(&self) -> &[usize] {
-        &self.outlets
+    fn default_outlets(&self) -> &[usize] {
+        &self.default_outlets
     }
 
     fn graph(&self) -> &EdgeAttributedUndirectedGraph<Length> {

@@ -14,7 +14,7 @@ pub trait Model<S: Site, T> {
     fn num(&self) -> usize;
     fn sites(&self) -> &[S];
     fn areas(&self) -> &[Area];
-    fn outlets(&self) -> &[usize];
+    fn default_outlets(&self) -> &[usize];
     fn graph(&self) -> &EdgeAttributedUndirectedGraph<Length>;
     fn create_terrain_from_result(&self, altitude: &[Altitude]) -> T;
 }

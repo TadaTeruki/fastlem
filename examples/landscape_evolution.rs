@@ -1,7 +1,6 @@
 use fastlem::core::attributes::TerrainAttributes;
 use fastlem::lem::generator::TerrainGenerator;
 use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
-use rand::{Rng, SeedableRng};
 extern crate fastlem;
 
 fn main() {
@@ -10,30 +9,14 @@ fn main() {
 
     // Bounding box to generate random sites and render terrain data to image
     let bound_min = Site2D { x: 0.0, y: 0.0 };
-    let bound_max = Site2D {
-        x: 200.0, // 200 km
-        y: 200.0, // 200 km
-    };
-
-    // Generate random sites
-    let mut rng = rand::rngs::StdRng::seed_from_u64(0);
-
-    let sites = (0..num)
-        .map(|_| {
-            let x = rng.gen_range(bound_min.x..bound_max.x);
-            let y = rng.gen_range(bound_min.y..bound_max.y);
-            Site2D { x, y }
-        })
-        .collect::<Vec<Site2D>>();
+    let bound_max = Site2D { x: 100.0, y: 100.0 };
 
     // `TerrainModel` is a set of fundamental data required for genreating terrain.
     // This includes a set of sites and graph (created by delaunay triangulation).
     // When `build` method is called, the model is validated and the graph is constructed.
-    // When `iterate_sites` method is called (after `set_bounding_box` method was called), the sites are relocated to apploximately evenly spaced positions using Lloyd's algorithm.
-    let model = TerrainModel2DBulider::default()
-        .set_sites(sites)
-        .set_bounding_box(Some(bound_min), Some(bound_max))
-        .iterate_sites(1)
+    // When `relaxate_sites` method is called (after `set_bounding_box` method was called), the sites are relocated to apploximately evenly spaced positions using Lloyd's algorithm.
+    let model = TerrainModel2DBulider::from_random_sites(num, bound_min, bound_max)
+        .relaxate_sites(1)
         .unwrap()
         .build()
         .unwrap();

@@ -1,6 +1,6 @@
-use std::{error, io};
-
+use rand::Rng;
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
+use thiserror::Error;
 use voronoice::{BoundingBox, VoronoiBuilder};
 
 use crate::core::{
@@ -16,6 +16,14 @@ use super::{model::TerrainModel2D, sites::Site2D};
 /// **TODO**: This value should be deprecated but it is still defined to avoid a bug. The reason of the bug should be investigated.
 const DEFAULT_BOUDNING_BOX_MARGIN: f64 = 1e-9;
 
+#[derive(Error, Debug)]
+pub enum ModelBuilderError {
+    #[error("You must set sites using `set_sites` before calculating area")]
+    SitesNotSet,
+    #[error("Failed to calculate voronoi diagram")]
+    VoronoiError,
+}
+
 /// Provides methods to construct a `TerrainModel2D`.
 ///
 /// ### Required parameters
@@ -23,16 +31,30 @@ const DEFAULT_BOUDNING_BOX_MARGIN: f64 = 1e-9;
 /// ### Optional parameters
 /// - `bound_min` and `bound_max` are the bounding rectangle of the sites. If not set, the bounding rectangle will be computed from the sites.
 ///    This parameter is used to calculate the area or to relocate the sites to apploximately evenly spaced positions using Lloyd's algorithm.
-/// - `custom_outlets` is the set of outlets. If not set, the convex hull of the sites will be used as the outlets.
 #[derive(Default, Clone)]
 pub struct TerrainModel2DBulider {
     sites: Option<Vec<Site2D>>,
     bound_min: Option<Site2D>,
     bound_max: Option<Site2D>,
-    custom_outlets: Option<Vec<usize>>,
 }
 
 impl TerrainModel2DBulider {
+    pub fn from_random_sites(num: usize, bound_min: Site2D, bound_max: Site2D) -> Self {
+        let mut rng = rand::thread_rng();
+        let sites = (0..num)
+            .map(|_| {
+                let x = rng.gen_range(bound_min.x..bound_max.x);
+                let y = rng.gen_range(bound_min.y..bound_max.y);
+                Site2D { x, y }
+            })
+            .collect::<Vec<Site2D>>();
+        Self {
+            sites: Some(sites),
+            bound_min: Some(bound_min),
+            bound_max: Some(bound_max),
+        }
+    }
+
     /// Set sites.
     pub fn set_sites(self, sites: Vec<Site2D>) -> Self {
         Self {
@@ -54,9 +76,9 @@ impl TerrainModel2DBulider {
     }
 
     /// Relocate the sites to apploximately evenly spaced positions using Lloyd's algorithm.
-    /// The number of iterations for Lloyd's algorithm is specified by `iterations`.
-    pub fn iterate_sites(self, iterations: usize) -> Result<Self, Box<dyn error::Error>> {
-        if iterations == 0 {
+    /// The number of times for Lloyd's algorithm is specified by `times`.
+    pub fn relaxate_sites(self, times: usize) -> Result<Self, ModelBuilderError> {
+        if times == 0 {
             return Ok(self);
         }
 
@@ -66,10 +88,7 @@ impl TerrainModel2DBulider {
             if let Some(sites) = &self.sites {
                 sites
             } else {
-                return Err(Box::new(io::Error::new(
-                    io::ErrorKind::InvalidInput,
-                    "You must set sites using `set_sites` before iterating",
-                )));
+                return Err(ModelBuilderError::SitesNotSet);
             }
         };
 
@@ -88,7 +107,7 @@ impl TerrainModel2DBulider {
                 bound_max.x - bound_min.x,
                 bound_max.y - bound_min.y,
             ))
-            .set_lloyd_relaxation_iterations(iterations)
+            .set_lloyd_relaxation_iterations(times)
             .build();
 
         if let Some(voronoi) = voronoi_opt {
@@ -107,25 +126,12 @@ impl TerrainModel2DBulider {
         Ok(self)
     }
 
-    /// Set the custom outlets of sites.
-    pub fn set_custom_outlets(self, custom_outlets: Vec<usize>) -> Self {
-        //self.custom_outlets = Some(custom_outlets);
-        //self
-        Self {
-            custom_outlets: Some(custom_outlets),
-            ..self
-        }
-    }
-
-    pub fn build(&self) -> Result<TerrainModel2D, Box<dyn error::Error>> {
+    pub fn build(&self) -> Result<TerrainModel2D, ModelBuilderError> {
         let sites = {
             if let Some(sites) = &self.sites {
                 sites
             } else {
-                return Err(Box::new(io::Error::new(
-                    io::ErrorKind::InvalidInput,
-                    "You must set sites using `set_sites` before calculating area",
-                )));
+                return Err(ModelBuilderError::SitesNotSet);
             }
         };
 
@@ -183,24 +189,20 @@ impl TerrainModel2DBulider {
                 graph
             };
 
-            let outlets: Vec<usize> = {
-                if let Some(outlets) = &self.custom_outlets {
-                    outlets.to_vec()
-                } else {
-                    triangulation.hull.to_vec()
-                }
-            };
+            let default_outlets = triangulation.hull.to_vec();
 
-            Ok(TerrainModel2D::new(sites.to_vec(), areas, graph, outlets))
+            Ok(TerrainModel2D::new(
+                sites.to_vec(),
+                areas,
+                graph,
+                default_outlets,
+            ))
         } else {
-            Err(Box::new(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Failed to calculate voronoi diagram",
-            )))
+            Err(ModelBuilderError::VoronoiError)
         }
     }
 
-    fn query_bound_min(&self) -> Result<Site2D, Box<dyn error::Error>> {
+    fn query_bound_min(&self) -> Result<Site2D, ModelBuilderError> {
         if let Some(bound_min) = self.bound_min {
             Ok(bound_min)
         } else if let Some(sites) = &self.sites {
@@ -216,14 +218,11 @@ impl TerrainModel2DBulider {
             );
             Ok(bound_min)
         } else {
-            Err(Box::new(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "You must set sites using `set_sites` before calculating area",
-            )))
+            Err(ModelBuilderError::SitesNotSet)
         }
     }
 
-    fn query_bound_max(&self) -> Result<Site2D, Box<dyn error::Error>> {
+    fn query_bound_max(&self) -> Result<Site2D, ModelBuilderError> {
         if let Some(bound_max) = self.bound_max {
             Ok(bound_max)
         } else if let Some(sites) = &self.sites {
@@ -239,10 +238,7 @@ impl TerrainModel2DBulider {
             );
             Ok(bound_max)
         } else {
-            Err(Box::new(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "You must set sites using `set_sites` before calculating area",
-            )))
+            Err(ModelBuilderError::SitesNotSet)
         }
     }
 }

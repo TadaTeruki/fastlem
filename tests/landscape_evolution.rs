@@ -8,10 +8,7 @@ extern crate fastlem;
 fn test_landscape_evolution() {
     let num = 10000;
     let bound_min = Site2D { x: 0.0, y: 0.0 };
-    let bound_max = Site2D {
-        x: 200.0, // 200 km
-        y: 100.0, // 100 km
-    };
+    let bound_max = Site2D { x: 200.0, y: 100.0 };
 
     let mut sites = Vec::with_capacity(num);
     let mut rng = rand::thread_rng();
@@ -25,7 +22,7 @@ fn test_landscape_evolution() {
     let model = TerrainModel2DBulider::default()
         .set_sites(sites)
         .set_bounding_box(Some(bound_min), Some(bound_max))
-        .iterate_sites(1)
+        .relaxate_sites(1)
         .unwrap()
         .build()
         .unwrap();
@@ -39,11 +36,11 @@ fn test_landscape_evolution() {
                         .set_base_altitude(0.0)
                         .set_erodibility(1.0)
                         .set_uplift_rate(1.0)
+                        .set_is_outlet(false)
                         .set_max_slope(Some(3.14 * 0.1))
                 })
                 .collect::<_>(),
         )
-        .set_exponent_m(0.5)
         .generate()
         .unwrap();
 

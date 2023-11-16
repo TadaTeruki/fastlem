@@ -13,8 +13,9 @@ rtree_rs = "0.1"
 voronoice = "0.2"
 terrain-graph = "1.0"
 naturalneighbor = "1.1"
+rand = "0.8"
+thiserror = "1.0"
 
 [dev-dependencies]
-rand = "0.8"
 image = "0.24"
 terrain_visualizer = { git = "https://github.com/TadaTeruki/terrain-visualizer" }

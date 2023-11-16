@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use thiserror::Error;
 
 use crate::{
     core::{
@@ -12,6 +13,16 @@ use crate::{
 
 /// The default value of the exponent `m` for calculating stream power.
 const DEFAULT_M_EXP: f64 = 0.5;
+
+#[derive(Error, Debug)]
+pub enum GenerationError {
+    #[error("The number of attributes must be equal to the number of sites")]
+    InvalidNumberOfAttributes,
+    #[error("You must set attributes before generating terrain")]
+    AttributesNotSet,
+    #[error("You must set `TerrainModel` before generating terrain")]
+    ModelNotSet,
+}
 
 /// Provides methods for generating terrain.
 ///
@@ -30,7 +41,6 @@ where
     model: Option<M>,
     attributes: Option<Vec<TerrainAttributes>>,
     max_iteration: Option<Step>,
-    m_exp: Option<f64>,
     _phantom: PhantomData<(S, T)>,
 }
 
@@ -44,7 +54,6 @@ where
             model: None,
             attributes: None,
             max_iteration: None,
-            m_exp: None,
             _phantom: PhantomData,
         }
     }
@@ -82,60 +91,48 @@ where
         }
     }
 
-    /// Set the exponent `m` for calculating stream power.
-    /// The default value is 0.5.
-    ///
-    /// Note: This is an advanced parameter.
-    pub fn set_exponent_m(self, m_exp: f64) -> Self {
-        Self {
-            m_exp: Some(m_exp),
-            ..self
-        }
-    }
-
     /// Generate terrain.
-    pub fn generate(self) -> Result<T, Box<dyn std::error::Error>> {
+    pub fn generate(self) -> Result<T, GenerationError> {
         let model = {
             if let Some(model) = &self.model {
                 model
             } else {
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "You must set `TerrainModel` before generating terrain",
-                )));
+                return Err(GenerationError::ModelNotSet);
             }
         };
 
-        let (num, sites, areas, graph, outlets) = (
+        let (num, sites, areas, graph, default_outlets) = (
             model.num(),
             model.sites(),
             model.areas(),
             model.graph(),
-            model.outlets(),
+            model.default_outlets(),
         );
 
         let attributes = {
             if let Some(attributes) = &self.attributes {
                 if attributes.len() != num {
-                    return Err(Box::new(std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput,
-                        "The number of attributes must be equal to the number of sites",
-                    )));
+                    return Err(GenerationError::InvalidNumberOfAttributes);
                 }
                 attributes
             } else {
-                return Err(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    "You must set attributes before generating terrain",
-                )));
+                return Err(GenerationError::AttributesNotSet);
             }
         };
 
-        let m_exp = {
-            if let Some(m_exp) = &self.m_exp {
-                *m_exp
+        let m_exp = DEFAULT_M_EXP;
+
+        let outlets = {
+            let outlets = attributes
+                .iter()
+                .enumerate()
+                .filter(|(_, attribute)| attribute.is_outlet)
+                .map(|(i, _)| i)
+                .collect::<Vec<_>>();
+            if outlets.is_empty() {
+                default_outlets.to_vec()
             } else {
-                DEFAULT_M_EXP
+                outlets
             }
         };
 
@@ -147,7 +144,7 @@ where
             let mut step = 0;
             loop {
                 let stream_tree =
-                    stream_tree::StreamTree::construct(sites, &altitudes, graph, outlets);
+                    stream_tree::StreamTree::construct(sites, &altitudes, graph, &outlets);
 
                 let mut drainage_areas = areas.to_vec();
                 let mut response_times = vec![0.0; num];

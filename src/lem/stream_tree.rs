@@ -6,7 +6,7 @@ use crate::core::{
     units::{Altitude, Length},
 };
 
-/// Tree structure for representing the flow of water.
+/// Tree structure for representing the flow of outlet.
 ///  - `next` is the next site of each site in the flow.
 pub struct StreamTree {
     pub next: Vec<usize>,
