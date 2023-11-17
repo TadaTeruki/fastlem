@@ -1,0 +1,248 @@
+[
+  {
+    "x": 253.5,
+    "y": 265.76666259765625,
+    "erodibility": 0.47950000000000004,
+    "is_outlet": false
+  },
+  {
+    "x": 408.5,
+    "y": 383.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 261.5,
+    "y": 477.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 30.5,
+    "y": 363.76666259765625,
+    "erodibility": 0.38749999999999996,
+    "is_outlet": false
+  },
+  {
+    "x": 295.5,
+    "y": 29.76666259765625,
+    "erodibility": 0.192,
+    "is_outlet": false
+  },
+  {
+    "x": 451.5,
+    "y": 21.76666259765625,
+    "erodibility": 0.238,
+    "is_outlet": false
+  },
+  {
+    "x": 101.5,
+    "y": 92.76666259765625,
+    "erodibility": 0.1805,
+    "is_outlet": false
+  },
+  {
+    "x": 333.5,
+    "y": 122.76666259765625,
+    "erodibility": 0.192,
+    "is_outlet": false
+  },
+  {
+    "x": 253.5,
+    "y": 145.76666259765625,
+    "erodibility": 0.6749999999999999,
+    "is_outlet": false
+  },
+  {
+    "x": 165.5,
+    "y": 191.76666259765625,
+    "erodibility": 0.32999999999999996,
+    "is_outlet": false
+  },
+  {
+    "x": 321.5,
+    "y": 190.76666259765625,
+    "erodibility": 0.9279999999999999,
+    "is_outlet": true
+  },
+  {
+    "x": 377.5,
+    "y": 416.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 399.5,
+    "y": 473.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 456.5,
+    "y": 476.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 480.5,
+    "y": 424.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 449.5,
+    "y": 364.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 425.5,
+    "y": 444.76666259765625,
+    "erodibility": 0.1,
+    "is_outlet": false
+  },
+  {
+    "x": 170.5,
+    "y": 124.76666259765625,
+    "erodibility": 0.307,
+    "is_outlet": false
+  },
+  {
+    "x": 112.5,
+    "y": 163.76666259765625,
+    "erodibility": 0.27249999999999996,
+    "is_outlet": false
+  },
+  {
+    "x": 206.5,
+    "y": 11.76666259765625,
+    "erodibility": 0.14600000000000002,
+    "is_outlet": false
+  },
+  {
+    "x": 73.5,
+    "y": 297.76666259765625,
+    "erodibility": 0.5025,
+    "is_outlet": false
+  },
+  {
+    "x": 376.5,
+    "y": 298.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 368.5,
+    "y": 236.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 363.5,
+    "y": 180.76666259765625,
+    "erodibility": 0.9279999999999999,
+    "is_outlet": false
+  },
+  {
+    "x": 416.5,
+    "y": 112.76666259765625,
+    "erodibility": 0.4105,
+    "is_outlet": false
+  },
+  {
+    "x": 484.5,
+    "y": 109.76666259765625,
+    "erodibility": 0.27249999999999996,
+    "is_outlet": false
+  },
+  {
+    "x": 26.5,
+    "y": 469.76666259765625,
+    "erodibility": 0.38749999999999996,
+    "is_outlet": false
+  },
+  {
+    "x": 22.5,
+    "y": 277.76666259765625,
+    "erodibility": 0.2495,
+    "is_outlet": false
+  },
+  {
+    "x": 22.5,
+    "y": 165.85000610351562,
+    "erodibility": 0.215,
+    "is_outlet": false
+  },
+  {
+    "x": 136.89999389648438,
+    "y": 417.98333740234375,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 387.5,
+    "y": 56.76666259765625,
+    "erodibility": 0.4105,
+    "is_outlet": false
+  },
+  {
+    "x": 302.8999938964844,
+    "y": 272.98333740234375,
+    "erodibility": 0.1805,
+    "is_outlet": true
+  },
+  {
+    "x": 201.5,
+    "y": 389.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 291.5,
+    "y": 390.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 337.5,
+    "y": 342.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 489.5,
+    "y": 173.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 285.5,
+    "y": 358.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 149.5,
+    "y": 364.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 166.5,
+    "y": 252.76666259765625,
+    "erodibility": 0.7669999999999999,
+    "is_outlet": false
+  },
+  {
+    "x": 469.5,
+    "y": 232.76666259765625,
+    "erodibility": 0.675,
+    "is_outlet": true
+  },
+  {
+    "x": 219.5,
+    "y": 289.76666259765625,
+    "erodibility": 0.5944999999999999,
+    "is_outlet": false
+  }
+]

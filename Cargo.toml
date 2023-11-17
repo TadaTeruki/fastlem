@@ -18,4 +18,6 @@ thiserror = "1.0"
 
 [dev-dependencies]
 image = "0.24"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 terrain_visualizer = { git = "https://github.com/TadaTeruki/terrain-visualizer" }
