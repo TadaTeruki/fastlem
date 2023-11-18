@@ -13,6 +13,7 @@ struct SampleNode {
     is_outlet: bool,
 }
 
+// required for naturalneighbor crate
 impl Into<Point> for SampleNode {
     fn into(self) -> Point {
         Point {
@@ -22,6 +23,7 @@ impl Into<Point> for SampleNode {
     }
 }
 
+// required for naturalneighbor crate
 impl Lerpable for SampleNode {
     fn lerp(&self, other: &Self, t: f64) -> Self {
         Self {
@@ -56,8 +58,6 @@ fn main() {
     )
     .unwrap();
 
-    let edge_nodes_num = 5;
-
     let corners = vec![
         Point {
             x: bound_min.x,
@@ -89,6 +89,8 @@ fn main() {
         }
         nearest_node.unwrap().clone()
     };
+
+    let edge_nodes_num = 5;
 
     let edge_nodes = corners
         .iter()
@@ -138,6 +140,7 @@ fn main() {
         .generate()
         .unwrap();
 
+    // (color: [u8; 3], altitude: f64)
     let color_table: Vec<([u8; 3], f64)> = vec![
         ([70, 150, 200], 0.0),
         ([240, 240, 210], 0.05),
@@ -145,6 +148,42 @@ fn main() {
         ([25, 100, 25], 18.0),
         ([15, 60, 15], 30.0),
     ];
+
+    // get color from altitude
+    let get_color = |altitude: f64| -> [u8; 3] {
+        let color_index = {
+            let mut i = 0;
+            while i < color_table.len() {
+                if altitude < color_table[i].1 {
+                    break;
+                }
+                i += 1;
+            }
+            i
+        };
+
+        if color_index == 0 {
+            color_table[0].0
+        } else if color_index == color_table.len() {
+            color_table[color_table.len() - 1].0
+        } else {
+            let color_a = color_table[color_index - 1];
+            let color_b = color_table[color_index];
+
+            let prop_a = color_a.1;
+            let prop_b = color_b.1;
+
+            let prop = (altitude - prop_a) / (prop_b - prop_a);
+
+            let color = [
+                (color_a.0[0] as f64 + (color_b.0[0] as f64 - color_a.0[0] as f64) * prop) as u8,
+                (color_a.0[1] as f64 + (color_b.0[1] as f64 - color_a.0[1] as f64) * prop) as u8,
+                (color_a.0[2] as f64 + (color_b.0[2] as f64 - color_a.0[2] as f64) * prop) as u8,
+            ];
+
+            color
+        }
+    };
 
     let img_width = 500;
     let img_height = 500;
@@ -158,48 +197,7 @@ fn main() {
             let site = Site2D { x, y };
             let altitude = terrain.get_altitude(&site);
             if let Some(altitude) = altitude {
-                let prop = altitude;
-                let color = {
-                    let color_index = {
-                        let mut i = 0;
-                        while i < color_table.len() {
-                            if prop < color_table[i].1 {
-                                break;
-                            }
-                            i += 1;
-                        }
-                        i
-                    };
-
-                    if color_index == 0 {
-                        color_table[0].0
-                    } else if color_index == color_table.len() {
-                        color_table[color_table.len() - 1].0
-                    } else {
-                        let color_a = color_table[color_index - 1];
-                        let color_b = color_table[color_index];
-
-                        let prop_a = color_a.1;
-                        let prop_b = color_b.1;
-
-                        let prop = (prop - prop_a) / (prop_b - prop_a);
-
-                        let color = [
-                            (color_a.0[0] as f64
-                                + (color_b.0[0] as f64 - color_a.0[0] as f64) * prop)
-                                as u8,
-                            (color_a.0[1] as f64
-                                + (color_b.0[1] as f64 - color_a.0[1] as f64) * prop)
-                                as u8,
-                            (color_a.0[2] as f64
-                                + (color_b.0[2] as f64 - color_a.0[2] as f64) * prop)
-                                as u8,
-                        ];
-
-                        color
-                    }
-                };
-
+                let color = get_color(altitude);
                 image_buf.put_pixel(imgx as u32, imgy as u32, image::Rgb(color));
             }
         }
