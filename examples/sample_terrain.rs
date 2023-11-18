@@ -50,6 +50,8 @@ fn main() {
     let model = TerrainModel2DBulider::from_random_sites(num, bound_min, bound_max)
         .relaxate_sites(1)
         .unwrap()
+        .add_edge_sites(None)
+        .unwrap()
         .build()
         .unwrap();
 
@@ -58,7 +60,7 @@ fn main() {
     )
     .unwrap();
 
-    let corners = vec![
+    let corners = [
         Point {
             x: bound_min.x,
             y: bound_min.y,
@@ -124,7 +126,7 @@ fn main() {
     let terrain = TerrainGenerator::default()
         .set_model(model)
         .set_attributes(
-            (0..num)
+            (0..sites.len())
                 .map(|i| {
                     let point = Point {
                         x: sites[i].x,
@@ -143,8 +145,8 @@ fn main() {
     // (color: [u8; 3], altitude: f64)
     let color_table: Vec<([u8; 3], f64)> = vec![
         ([70, 150, 200], 0.0),
-        ([240, 240, 210], 0.05),
-        ([190, 200, 120], 0.75),
+        ([240, 240, 210], 0.5),
+        ([190, 200, 120], 1.0),
         ([25, 100, 25], 18.0),
         ([15, 60, 15], 30.0),
     ];
@@ -192,8 +194,8 @@ fn main() {
 
     for imgx in 0..img_width {
         for imgy in 0..img_height {
-            let x = (bound_max.x - bound_min.x) * (imgx as f64 / img_width as f64) + bound_min.x;
-            let y = (bound_max.y - bound_min.y) * (imgy as f64 / img_height as f64) + bound_min.y;
+            let x = bound_max.x * (imgx as f64 / img_width as f64);
+            let y = bound_max.y * (imgy as f64 / img_height as f64);
             let site = Site2D { x, y };
             let altitude = terrain.get_altitude(&site);
             if let Some(altitude) = altitude {
