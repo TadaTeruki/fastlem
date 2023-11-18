@@ -49,7 +49,7 @@ fn main() {
                     let x = site.x / bound_max.x;
                     let y = site.y / bound_max.y;
                     let noise_erodibility =
-                        octaved_perlin(&perlin, x * 5.0, y * 5.0, octaves) * 1.5 + 1.0;
+                        octaved_perlin(&perlin, x * 5.0, y * 5.0, octaves) * 0.5 + 0.5;
                     let noise_is_outlet =
                         octaved_perlin(&perlin, x * 2.0, y * 2.0, octaves) * 0.5 + 0.5;
                     TerrainAttributes::default()
