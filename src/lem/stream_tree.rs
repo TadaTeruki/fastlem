@@ -14,12 +14,18 @@ pub struct StreamTree {
 
 struct RidgeElement {
     index: usize,
-    diff: Altitude,
+    dist: Length,
+}
+
+impl RidgeElement {
+    fn evaluate(&self) -> f64 {
+        self.dist
+    }
 }
 
 impl PartialEq for RidgeElement {
     fn eq(&self, other: &Self) -> bool {
-        self.diff == other.diff
+        self.evaluate() == other.evaluate()
     }
 }
 
@@ -27,7 +33,7 @@ impl Eq for RidgeElement {}
 
 impl Ord for RidgeElement {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.diff.partial_cmp(&self.diff).unwrap()
+        other.evaluate().partial_cmp(&self.evaluate()).unwrap()
     }
 }
 
@@ -87,8 +93,7 @@ impl StreamTree {
         }
 
         // remove lakes from the stream tree
-        let next =
-            Self::remove_lakes_from_stream_tree(&next, num, altitudes, graph, outlets, &subroot);
+        let next = Self::remove_lakes_from_stream_tree(&next, num, graph, outlets, &subroot);
 
         StreamTree { next }
     }
@@ -170,7 +175,6 @@ impl StreamTree {
     fn remove_lakes_from_stream_tree(
         next: &[usize],
         num: usize,
-        altitudes: &[Altitude],
         graph: &EdgeAttributedUndirectedGraph<Length>,
         outlets: &[usize],
         subroot: &[usize],
@@ -182,7 +186,7 @@ impl StreamTree {
             root[outlet] = Some(outlet);
             ridgestack.push(RidgeElement {
                 index: outlet,
-                diff: altitudes[outlet],
+                dist: 0.0,
             });
         });
 
@@ -228,7 +232,7 @@ impl StreamTree {
                     let distance = ja.1;
                     ridgestack.push(RidgeElement {
                         index: j,
-                        diff: (altitudes[j] - altitudes[i]) * distance,
+                        dist: distance,
                     });
                 });
             root[i] = root[subroot[i]];

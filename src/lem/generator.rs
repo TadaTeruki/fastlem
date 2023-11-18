@@ -171,7 +171,7 @@ where
                             if ok {
                                 edge
                             } else {
-                                0.0
+                                1.0
                             }
                         };
                         let celerity = attributes[i].erodibility * drainage_areas[i].powf(m_exp);
@@ -196,6 +196,7 @@ where
                                     1.0
                                 }
                             };
+                            let distance = distance * distance;
                             let max_slope = max_slope.tan();
                             let slope = (new_altitude - altitudes[j]) / distance;
                             if slope > max_slope {

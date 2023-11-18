@@ -15,8 +15,10 @@ use super::{model::TerrainModel2D, sites::Site2D};
 
 #[derive(Error, Debug)]
 pub enum ModelBuilderError {
-    #[error("You must set sites using `set_sites` before calculating area")]
+    #[error("You must set sites using `set_sites`")]
     SitesNotSet,
+    #[error("You must set the bounding box using `set_bounding_box`")]
+    BoundsNotSet,
     #[error("Failed to calculate voronoi diagram")]
     VoronoiError,
 }
@@ -50,6 +52,72 @@ impl TerrainModel2DBulider {
             bound_min: Some(bound_min),
             bound_max: Some(bound_max),
         }
+    }
+
+    pub fn add_edge_sites(self, edge_num: Option<usize>) -> Result<Self, ModelBuilderError> {
+        let sites = {
+            if let Some(sites) = self.sites {
+                sites
+            } else {
+                return Err(ModelBuilderError::SitesNotSet);
+            }
+        };
+
+        let (bound_min, bound_max) = {
+            if let (Some(bound_min), Some(bound_max)) = (self.bound_min, self.bound_max) {
+                (bound_min, bound_max)
+            } else {
+                return Err(ModelBuilderError::BoundsNotSet);
+            }
+        };
+
+        let eps = f32::EPSILON as f64;
+
+        let corners = [
+            Site2D {
+                x: bound_min.x + eps,
+                y: bound_min.y + eps,
+            },
+            Site2D {
+                x: bound_min.x + eps,
+                y: bound_max.y - eps,
+            },
+            Site2D {
+                x: bound_max.x - eps,
+                y: bound_max.y - eps,
+            },
+            Site2D {
+                x: bound_max.x - eps,
+                y: bound_min.y + eps,
+            },
+        ];
+
+        let edge_num = edge_num.unwrap_or((sites.len() as f64).sqrt() as usize);
+
+        let edge_sites = corners
+            .iter()
+            .enumerate()
+            .flat_map(|(i, corner)| {
+                let next = &corners[(i + 1) % corners.len()];
+                let mut edge_sites = Vec::with_capacity(edge_num);
+                for j in 0..edge_num {
+                    let t = j as f64 / edge_num as f64;
+                    let point = Site2D {
+                        x: corner.x * (1.0 - t) + next.x * t,
+                        y: corner.y * (1.0 - t) + next.y * t,
+                    };
+                    edge_sites.push(point);
+                }
+                edge_sites
+            })
+            .collect::<Vec<_>>();
+
+        let sites = sites.into_iter().chain(edge_sites).collect::<Vec<_>>();
+
+        Ok(Self {
+            sites: Some(sites),
+            ..self
+        })
     }
 
     /// Set sites.
@@ -215,7 +283,7 @@ impl TerrainModel2DBulider {
             );
             Ok(bound_min)
         } else {
-            Err(ModelBuilderError::SitesNotSet)
+            Err(ModelBuilderError::BoundsNotSet)
         }
     }
 
@@ -235,7 +303,7 @@ impl TerrainModel2DBulider {
             );
             Ok(bound_max)
         } else {
-            Err(ModelBuilderError::SitesNotSet)
+            Err(ModelBuilderError::BoundsNotSet)
         }
     }
 }
