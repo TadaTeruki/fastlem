@@ -1,4 +1,4 @@
-use rand::Rng;
+use rand::{rngs::StdRng, Rng, SeedableRng};
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 use thiserror::Error;
 use voronoice::{BoundingBox, VoronoiBuilder};
@@ -39,7 +39,7 @@ pub struct TerrainModel2DBulider {
 
 impl TerrainModel2DBulider {
     pub fn from_random_sites(num: usize, bound_min: Site2D, bound_max: Site2D) -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng: StdRng = SeedableRng::from_seed([0u8; 32]);
         let sites = (0..num)
             .map(|_| {
                 let x = rng.gen_range(bound_min.x..bound_max.x);

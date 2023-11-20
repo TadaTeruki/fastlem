@@ -1,3 +1,4 @@
+use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::marker::PhantomData;
 use thiserror::Error;
 
@@ -136,10 +137,12 @@ where
             }
         };
 
+        let mut rng: StdRng = SeedableRng::from_seed([0u8; 32]);
+
         let altitudes: Vec<Altitude> = {
             let mut altitudes = attributes
                 .iter()
-                .map(|a| a.base_altitude)
+                .map(|a| a.base_altitude + rng.gen::<f64>() * f64::EPSILON)
                 .collect::<Vec<_>>();
             let mut step = 0;
             loop {

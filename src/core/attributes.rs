@@ -22,7 +22,7 @@ pub struct TerrainAttributes {
 impl Default for TerrainAttributes {
     fn default() -> Self {
         Self {
-            base_altitude: rand::random::<f64>() * f64::EPSILON,
+            base_altitude: 0.0,
             erodibility: 1.0,
             uplift_rate: 1.0,
             is_outlet: false,
