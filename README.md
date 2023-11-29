@@ -1,13 +1,11 @@
-> [!WARNING]
-> This project is now in development.
-> 
-> During `0.1.*`, the interface may change a lot.
-
 # fastlem
 
 ![terrain](https://github.com/TadaTeruki/fastlem/assets/69315285/03be5898-677d-411b-8f23-755b69cb1e07)
 
 fastlem is a Rust library that provides methods for creating virtual terrains based on a simplified landscape evolution model (LEM). It generates terrain data with plausible reliefs by simulating the erosion process from a given initial topographical parameters. It helps you to create or generate realistic terrains for creative projects. 
+
+> [!WARNING]
+> This project is now in development. During `0.1.*`, the interface may change a lot.
 
 ## Preview
 
