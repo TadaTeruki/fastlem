@@ -1,5 +1,7 @@
-
-**Warning**: This project is now in development. During `0.1.*`, the interface may change a lot.
+> [!WARNING]
+> This project is now in development.
+> 
+> During `0.1.*`, the interface may change a lot.
 
 # fastlem
 
