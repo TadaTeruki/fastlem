@@ -30,7 +30,7 @@ fn main() {
     let model = TerrainModel2DBulider::from_random_sites(num, bound_min, bound_max)
         .relaxate_sites(1)
         .unwrap()
-        .add_edge_sites(None)
+        .add_edge_sites(None, None)
         .unwrap()
         .build()
         .unwrap();
