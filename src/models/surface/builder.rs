@@ -54,7 +54,11 @@ impl TerrainModel2DBulider {
         }
     }
 
-    pub fn add_edge_sites(self, edge_num: Option<usize>) -> Result<Self, ModelBuilderError> {
+    pub fn add_edge_sites(
+        self,
+        edge_num_x: Option<usize>,
+        edge_num_y: Option<usize>,
+    ) -> Result<Self, ModelBuilderError> {
         let sites = {
             if let Some(sites) = self.sites {
                 sites
@@ -71,7 +75,7 @@ impl TerrainModel2DBulider {
             }
         };
 
-        let eps = f32::EPSILON as f64;
+        let eps = 0.;
 
         let corners = [
             Site2D {
@@ -92,13 +96,26 @@ impl TerrainModel2DBulider {
             },
         ];
 
-        let edge_num = edge_num.unwrap_or((sites.len() as f64).sqrt() as usize);
+        //let edge_num = edge_num.unwrap_or((sites.len() as f64).sqrt() as usize);
 
         let edge_sites = corners
             .iter()
             .enumerate()
             .flat_map(|(i, corner)| {
                 let next = &corners[(i + 1) % corners.len()];
+                let edge_num = if i % 2 == 1 {
+                    edge_num_x.unwrap_or(
+                        (sites.len() as f64 / (bound_max.y - bound_min.y)
+                            * (bound_max.x - bound_min.x))
+                            .sqrt() as usize,
+                    )
+                } else {
+                    edge_num_y.unwrap_or(
+                        (sites.len() as f64 / (bound_max.x - bound_min.x)
+                            * (bound_max.y - bound_min.y))
+                            .sqrt() as usize,
+                    )
+                };
                 let mut edge_sites = Vec::with_capacity(edge_num);
                 for j in 0..edge_num {
                     let t = j as f64 / edge_num as f64;
@@ -220,6 +237,11 @@ impl TerrainModel2DBulider {
             .build();
 
         if let Some(voronoi) = voronoi_opt {
+            let sites = voronoi
+                .sites()
+                .iter()
+                .map(|s| Site2D { x: s.x, y: s.y })
+                .collect::<Vec<Site2D>>();
             let areas: Vec<Area> = voronoi
                 .iter_cells()
                 .map(|cell| {

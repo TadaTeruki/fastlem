@@ -145,6 +145,7 @@ where
                 .map(|a| a.base_altitude + rng.gen::<f64>() * f64::EPSILON)
                 .collect::<Vec<_>>();
             let mut step = 0;
+
             loop {
                 let stream_tree =
                     stream_tree::StreamTree::construct(sites, &altitudes, graph, &outlets);
