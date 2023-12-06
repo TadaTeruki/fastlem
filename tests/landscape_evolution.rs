@@ -11,19 +11,7 @@ fn test_landscape_evolution() {
     let num = 10000;
     let bound_min = Site2D { x: 0.0, y: 0.0 };
     let bound_max = Site2D { x: 200.0, y: 100.0 };
-
-    let mut sites = Vec::with_capacity(num);
-    let mut rng = rand::thread_rng();
-
-    for _ in 0..num {
-        let x = rng.gen_range(bound_min.x..bound_max.x);
-        let y = rng.gen_range(bound_min.y..bound_max.y);
-        sites.push(Site2D { x, y });
-    }
-
-    let model = TerrainModel2DBulider::default()
-        .set_sites(sites)
-        .set_bounding_box(Some(bound_min), Some(bound_max))
+    let model = TerrainModel2DBulider::from_random_sites(num, bound_min, bound_max)
         .relaxate_sites(1)
         .unwrap()
         .build()

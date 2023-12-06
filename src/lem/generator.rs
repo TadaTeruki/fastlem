@@ -199,7 +199,6 @@ where
                                     1.0
                                 }
                             };
-                            let distance = distance * distance;
                             let max_slope = max_slope.tan();
                             let slope = (new_altitude - altitudes[j]) / distance;
                             if slope > max_slope {
