@@ -280,7 +280,7 @@ fn main() {
     };
 
     // resolution of the image
-    let img_width = 1000;
+    let img_width = 500;
     let img_height = (img_width as f64 * bound_range.y / bound_range.x) as u32;
 
     let shadow_dist = 0.3;
