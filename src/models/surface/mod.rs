@@ -1,3 +1,4 @@
+//! 2D surface model
 pub mod builder;
 pub mod model;
 pub mod sites;
