@@ -1,4 +1,4 @@
-use fastlem::core::{attributes::TerrainAttributes, traits::Model};
+use fastlem::core::{parameters::TopographicalParameters, traits::Model};
 use fastlem::lem::generator::TerrainGenerator;
 use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use naturalneighbor::{Interpolator, Lerpable, Point};
@@ -125,7 +125,7 @@ fn main() {
 
     let terrain = TerrainGenerator::default()
         .set_model(model)
-        .set_attributes(
+        .set_parameters(
             (0..sites.len())
                 .map(|i| {
                     let point = Point {
@@ -133,7 +133,7 @@ fn main() {
                         y: sites[i].y,
                     };
                     let sample = interpolator.interpolate(&seed_nodes, point).unwrap();
-                    TerrainAttributes::default()
+                    TopographicalParameters::default()
                         .set_erodibility(sample.erodibility)
                         .set_is_outlet(sample.is_outlet)
                 })

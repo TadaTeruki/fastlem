@@ -1,4 +1,4 @@
-use fastlem::core::attributes::TerrainAttributes;
+use fastlem::core::parameters::TopographicalParameters;
 use fastlem::lem::generator::TerrainGenerator;
 use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 extern crate fastlem;
@@ -25,9 +25,9 @@ fn main() {
     // `TerrainGenerator` requires some paramaters to simulate landscape evolution for each site.
     let terrain = TerrainGenerator::default()
         .set_model(model)
-        .set_attributes(
+        .set_parameters(
             (0..num)
-                .map(|_| TerrainAttributes::default().set_erodibility(1.0))
+                .map(|_| TopographicalParameters::default().set_erodibility(1.0))
                 .collect::<_>(),
         )
         .generate()

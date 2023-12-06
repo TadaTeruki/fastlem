@@ -4,7 +4,7 @@ use thiserror::Error;
 
 use crate::{
     core::{
-        attributes::TerrainAttributes,
+        parameters::TopographicalParameters,
         traits::{Model, Site},
         units::{Altitude, Length, Step},
     },
@@ -17,20 +17,20 @@ const DEFAULT_M_EXP: f64 = 0.5;
 
 #[derive(Error, Debug)]
 pub enum GenerationError {
-    #[error("The number of attributes must be equal to the number of sites")]
-    InvalidNumberOfAttributes,
-    #[error("You must set attributes before generating terrain")]
-    AttributesNotSet,
+    #[error("The number of topographical parameters must be equal to the number of sites")]
+    InvalidNumberOfParameters,
+    #[error("You must set topographical parameters before generating terrain")]
+    ParametersNotSet,
     #[error("You must set `TerrainModel` before generating terrain")]
     ModelNotSet,
 }
 
 /// Provides methods for generating terrain.
 ///
-/// ### Required parameters
+/// ### Required properties
 ///  - `model` is the vector representation of the terrain network.
-///  - `attributes` is the attributes of sites. Each attribute contains the uplift rates, erodibilities, base altitudes and maximum slopes (see [TerrainAttributes] for details).
-/// ### Optional parameters
+///  - `parameters` is the topographical parameters of sites. Each parameter contains the uplift rates, erodibilities, base altitudes and maximum slopes (see [TopographicalParameters] for details).
+/// ### Optional properties
 ///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the altitudes of all sites are stable.
 ///
 pub struct TerrainGenerator<S, M, T>
@@ -39,7 +39,7 @@ where
     M: Model<S, T>,
 {
     model: Option<M>,
-    attributes: Option<Vec<TerrainAttributes>>,
+    parameters: Option<Vec<TopographicalParameters>>,
     max_iteration: Option<Step>,
     _phantom: PhantomData<(S, T)>,
 }
@@ -52,7 +52,7 @@ where
     fn default() -> Self {
         Self {
             model: None,
-            attributes: None,
+            parameters: None,
             max_iteration: None,
             _phantom: PhantomData,
         }
@@ -72,10 +72,10 @@ where
         }
     }
 
-    /// Set the attributes of sites.
-    pub fn set_attributes(self, attributes: Vec<TerrainAttributes>) -> Self {
+    /// Set the topographical parameters of sites. See [TopographicalParameters] about the parameters.
+    pub fn set_parameters(self, parameters: Vec<TopographicalParameters>) -> Self {
         Self {
-            attributes: Some(attributes),
+            parameters: Some(parameters),
             ..self
         }
     }
@@ -109,24 +109,24 @@ where
             model.default_outlets(),
         );
 
-        let attributes = {
-            if let Some(attributes) = &self.attributes {
-                if attributes.len() != num {
-                    return Err(GenerationError::InvalidNumberOfAttributes);
+        let parameters = {
+            if let Some(parameters) = &self.parameters {
+                if parameters.len() != num {
+                    return Err(GenerationError::InvalidNumberOfParameters);
                 }
-                attributes
+                parameters
             } else {
-                return Err(GenerationError::AttributesNotSet);
+                return Err(GenerationError::ParametersNotSet);
             }
         };
 
         let m_exp = DEFAULT_M_EXP;
 
         let outlets = {
-            let outlets = attributes
+            let outlets = parameters
                 .iter()
                 .enumerate()
-                .filter(|(_, attribute)| attribute.is_outlet)
+                .filter(|(_, param)| param.is_outlet)
                 .map(|(i, _)| i)
                 .collect::<Vec<_>>();
             if outlets.is_empty() {
@@ -139,7 +139,7 @@ where
         let mut rng: StdRng = SeedableRng::from_seed([0u8; 32]);
 
         let altitudes: Vec<Altitude> = {
-            let mut altitudes = attributes
+            let mut altitudes = parameters
                 .iter()
                 .map(|a| a.base_altitude + rng.gen::<f64>() * f64::EPSILON)
                 .collect::<Vec<_>>();
@@ -177,19 +177,19 @@ where
                                 1.0
                             }
                         };
-                        let celerity = attributes[i].erodibility * drainage_areas[i].powf(m_exp);
+                        let celerity = parameters[i].erodibility * drainage_areas[i].powf(m_exp);
                         response_times[i] += response_times[j] + 1.0 / celerity * distance;
                     });
 
                     // calculate altitudes
                     drainage_basin.for_each_upstream(|i| {
                         let mut new_altitude = altitudes[outlet]
-                            + attributes[i].uplift_rate
+                            + parameters[i].uplift_rate
                                 * (response_times[i] - response_times[outlet]).max(0.0);
 
                         // check if the slope is too steep
                         // if max_slope_func is not set, the slope is not checked
-                        if let Some(max_slope) = attributes[i].max_slope {
+                        if let Some(max_slope) = parameters[i].max_slope {
                             let j = stream_tree.next[i];
                             let distance: Length = {
                                 let (ok, edge) = graph.has_edge(i, j);

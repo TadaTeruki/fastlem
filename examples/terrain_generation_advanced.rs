@@ -1,4 +1,4 @@
-use fastlem::core::{attributes::TerrainAttributes, traits::Model};
+use fastlem::core::{parameters::TopographicalParameters, traits::Model};
 use fastlem::lem::generator::TerrainGenerator;
 use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use noise::{NoiseFn, Perlin};
@@ -184,7 +184,7 @@ fn main() {
 
     println!("generating...");
 
-    let attributes = {
+    let parameters = {
         sites
             .iter()
             .enumerate()
@@ -202,16 +202,16 @@ fn main() {
                 .abs()
                     * 4.0
                     + 0.1;
-                TerrainAttributes::default()
+                TopographicalParameters::default()
                     .set_erodibility(noise_erodibility)
                     .set_is_outlet(is_outlet[i])
             })
-            .collect::<Vec<TerrainAttributes>>()
+            .collect::<Vec<TopographicalParameters>>()
     };
 
     let terrain = TerrainGenerator::default()
         .set_model(model)
-        .set_attributes(attributes)
+        .set_parameters(parameters)
         .generate()
         .unwrap();
 

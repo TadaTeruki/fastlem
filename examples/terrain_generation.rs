@@ -1,4 +1,4 @@
-use fastlem::core::{attributes::TerrainAttributes, traits::Model};
+use fastlem::core::{parameters::TopographicalParameters, traits::Model};
 use fastlem::lem::generator::TerrainGenerator;
 use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use noise::{NoiseFn, Perlin};
@@ -41,7 +41,7 @@ fn main() {
 
     let terrain = TerrainGenerator::default()
         .set_model(model)
-        .set_attributes(
+        .set_parameters(
             (0..sites.len())
                 .map(|i| {
                     let site = sites[i];
@@ -52,7 +52,7 @@ fn main() {
                         octaved_perlin(&perlin, x * 5.0, y * 5.0, octaves) * 0.5 + 0.5;
                     let noise_is_outlet =
                         octaved_perlin(&perlin, x * 2.0, y * 2.0, octaves) * 0.5 + 0.5;
-                    TerrainAttributes::default()
+                    TopographicalParameters::default()
                         .set_erodibility(noise_erodibility)
                         .set_is_outlet(noise_is_outlet > 0.48)
                 })

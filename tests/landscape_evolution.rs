@@ -1,4 +1,4 @@
-use fastlem::core::attributes::TerrainAttributes;
+use fastlem::core::parameters::TopographicalParameters;
 use fastlem::lem::generator::TerrainGenerator;
 use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use rand::Rng;
@@ -29,10 +29,10 @@ fn test_landscape_evolution() {
 
     let terrain = TerrainGenerator::default()
         .set_model(model)
-        .set_attributes(
+        .set_parameters(
             (0..num)
                 .map(|_| {
-                    TerrainAttributes::default()
+                    TopographicalParameters::default()
                         .set_base_altitude(0.0)
                         .set_erodibility(1.0)
                         .set_uplift_rate(1.0)

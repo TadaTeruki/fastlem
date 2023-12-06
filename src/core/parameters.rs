@@ -2,10 +2,10 @@ use naturalneighbor::Lerpable;
 
 use super::units::{Altitude, Erodibility, Slope, UpliftRate};
 
-/// Attributes of sites.
-/// The shape of the terrain will be determined by these attributes.
+/// The topographical parameters of sites.
+/// The shape of the terrain will be determined by these parameters.
 ///
-/// ### Attributes
+/// ### Properties
 ///  - `base_altitude` is the initial altitude (unit: L).
 ///     The default value is 0.0 which is recommended if you create a terrain from scratch.
 ///
@@ -21,15 +21,15 @@ use super::units::{Altitude, Erodibility, Slope, UpliftRate};
 ///  - `max_slope` is the maximum slope (unit: rad). This value must be in the range of [0, π/2).
 ///     You can set `None` if you don't want to set the maximum slope.
 #[derive(Debug, Clone)]
-pub struct TerrainAttributes {
-    pub base_altitude: Altitude,
-    pub erodibility: Erodibility,
-    pub uplift_rate: UpliftRate,
-    pub is_outlet: bool,
-    pub max_slope: Option<Slope>,
+pub struct TopographicalParameters {
+    pub(crate) base_altitude: Altitude,
+    pub(crate) erodibility: Erodibility,
+    pub(crate) uplift_rate: UpliftRate,
+    pub(crate) is_outlet: bool,
+    pub(crate) max_slope: Option<Slope>,
 }
 
-impl Default for TerrainAttributes {
+impl Default for TopographicalParameters {
     fn default() -> Self {
         Self {
             base_altitude: 0.0,
@@ -41,7 +41,7 @@ impl Default for TerrainAttributes {
     }
 }
 
-impl TerrainAttributes {
+impl TopographicalParameters {
     pub fn set_base_altitude(self, base_altitude: Altitude) -> Self {
         Self {
             base_altitude,
@@ -72,7 +72,7 @@ impl TerrainAttributes {
     }
 }
 
-impl Lerpable for TerrainAttributes {
+impl Lerpable for TopographicalParameters {
     fn lerp(&self, other: &Self, prop: f64) -> Self {
         let base_altitude = self.base_altitude * (1.0 - prop) + other.base_altitude * prop;
         let uplift_rate = self.uplift_rate * (1.0 - prop) + other.uplift_rate * prop;
@@ -86,7 +86,7 @@ impl Lerpable for TerrainAttributes {
             (None, Some(other_max_slope)) => Some(other_max_slope),
             (None, None) => None,
         };
-        TerrainAttributes {
+        TopographicalParameters {
             base_altitude,
             uplift_rate,
             erodibility,
