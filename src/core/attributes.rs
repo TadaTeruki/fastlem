@@ -3,15 +3,23 @@ use naturalneighbor::Lerpable;
 use super::units::{Altitude, Erodibility, Slope, UpliftRate};
 
 /// Attributes of sites.
-/// The shape of terrain will be determined by these attributes.
+/// The shape of the terrain will be determined by these attributes.
+///
 /// ### Attributes
-///  - `base_altitude` is the base (initial) altitude (unit: L).
-///     If you create a terrain from scratch, 0.0 is recommended.
+///  - `base_altitude` is the initial altitude (unit: L).
+///     The default value is 0.0 which is recommended if you create a terrain from scratch.
+///
 ///  - `erodibility` is the erodibility.
+///     This is the main parameter to determine the shape of the terrain.
+///
 ///  - `uplift_rate` is the uplift rate (unit: L/T).
+///     The default value is 1.0. Configuring this value is not recommended.
+///
 ///  - `is_outlet` is whether the site is an outlet or not.
+///     The altitude will be always set 0.0 if the site is outlet.
+///
 ///  - `max_slope` is the maximum slope (unit: rad). This value must be in the range of [0, π/2).
-///     If you don't want to set the maximum slope, set `None`.
+///     You can set `None` if you don't want to set the maximum slope.
 #[derive(Debug, Clone)]
 pub struct TerrainAttributes {
     pub base_altitude: Altitude,

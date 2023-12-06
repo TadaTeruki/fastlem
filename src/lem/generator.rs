@@ -28,11 +28,10 @@ pub enum GenerationError {
 /// Provides methods for generating terrain.
 ///
 /// ### Required parameters
-///  - `model` is the vector representation of the terrain.
-///  - `attributes` is the attributes of sites. Attributes contains uplift rates, erodibilities, base altitudes and maximum slopes (see [TerrainAttributes] for details).
+///  - `model` is the vector representation of the terrain network.
+///  - `attributes` is the attributes of sites. Each attribute contains the uplift rates, erodibilities, base altitudes and maximum slopes (see [TerrainAttributes] for details).
 /// ### Optional parameters
 ///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the altitudes of all sites are stable.
-///  - `m_exp` is the constants for calculating stream power. If not set, the default value is 0.5.
 ///
 pub struct TerrainGenerator<S, M, T>
 where

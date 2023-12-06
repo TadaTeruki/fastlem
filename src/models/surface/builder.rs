@@ -10,9 +10,6 @@ use crate::core::{
 
 use super::{model::TerrainModel2D, sites::Site2D};
 
-/// Default margin for bounding box.
-/// This value is used when the bounding box is calculated from the minimum and maximum values of the sites.
-
 #[derive(Error, Debug)]
 pub enum ModelBuilderError {
     #[error("You must set sites using `set_sites`")]
@@ -23,7 +20,7 @@ pub enum ModelBuilderError {
     VoronoiError,
 }
 
-/// Provides methods to construct a `TerrainModel2D`.
+/// Provides methods to construct a `TerrainModel2D`, which is the vector representation of the terrain network.
 ///
 /// ### Required parameters
 /// - `sites` is the set of sites.

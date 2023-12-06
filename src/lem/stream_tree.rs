@@ -6,7 +6,7 @@ use crate::core::{
     units::{Altitude, Length},
 };
 
-/// Tree structure for representing the flow of outlet.
+/// Tree structure for representing the flow of water.
 ///  - `next` is the next site of each site in the flow.
 pub struct StreamTree {
     pub next: Vec<usize>,
@@ -68,7 +68,7 @@ impl Ord for StreamOriginElement {
 }
 
 impl StreamTree {
-    /// Constructs a stream tree from a given terrain.
+    /// Constructs a stream tree from a given terrain data.
     pub fn construct<S: Site>(
         sites: &[S],
         altitudes: &[Altitude],

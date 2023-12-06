@@ -7,14 +7,12 @@ use crate::core::{
 
 use super::{interpolator::TerrainInterpolator2D, sites::Site2D, terrain::Terrain2D};
 
-/// A set of fundamental data required for genreating terrain.
+/// A 2D vector representation of the terrain network.
 ///
 /// ### Properties
 /// - `sites` is the set of sites.
 /// - `areas` is the areas of each site.
 /// - `graph` is the graph representing the conecctions between sites.
-/// - `outlets` is the set of outlets.
-/// - `triangles` is the set of triangles created by delaunay triangulation.
 /// - `default_outlets` is the set of indices of sites that are set as outlets by default.
 pub struct TerrainModel2D {
     sites: Vec<Site2D>,

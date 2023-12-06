@@ -1,4 +1,4 @@
-//! fastlem is a Rust library for generating procedural terrains based on simplified landscape evolution model (LEM).
+//! fastlem is a Rust library to create virtual terrains based on a simplified Landscape Evolution Model (LEM).
 
 pub mod core;
 pub mod lem;
