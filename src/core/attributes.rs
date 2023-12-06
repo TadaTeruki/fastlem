@@ -1,3 +1,5 @@
+use naturalneighbor::Lerpable;
+
 use super::units::{Altitude, Erodibility, Slope, UpliftRate};
 
 /// Attributes of sites.
@@ -10,7 +12,7 @@ use super::units::{Altitude, Erodibility, Slope, UpliftRate};
 ///  - `is_outlet` is whether the site is an outlet or not.
 ///  - `max_slope` is the maximum slope (unit: rad). This value must be in the range of [0, π/2).
 ///     If you don't want to set the maximum slope, set `None`.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TerrainAttributes {
     pub base_altitude: Altitude,
     pub erodibility: Erodibility,
@@ -59,5 +61,29 @@ impl TerrainAttributes {
 
     pub fn set_max_slope(self, max_slope: Option<Slope>) -> Self {
         Self { max_slope, ..self }
+    }
+}
+
+impl Lerpable for TerrainAttributes {
+    fn lerp(&self, other: &Self, prop: f64) -> Self {
+        let base_altitude = self.base_altitude * (1.0 - prop) + other.base_altitude * prop;
+        let uplift_rate = self.uplift_rate * (1.0 - prop) + other.uplift_rate * prop;
+        let erodibility = self.erodibility * (1.0 - prop) + other.erodibility * prop;
+        let is_outlet = self.is_outlet || other.is_outlet;
+        let max_slope = match (self.max_slope, other.max_slope) {
+            (Some(self_max_slope), Some(other_max_slope)) => {
+                Some(self_max_slope * (1.0 - prop) + other_max_slope * prop)
+            }
+            (Some(self_max_slope), None) => Some(self_max_slope),
+            (None, Some(other_max_slope)) => Some(other_max_slope),
+            (None, None) => None,
+        };
+        TerrainAttributes {
+            base_altitude,
+            uplift_rate,
+            erodibility,
+            is_outlet,
+            max_slope,
+        }
     }
 }
