@@ -1,6 +1,8 @@
 use fastlem::core::traits::Model;
 use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
 use rand::Rng;
+mod voronoi_visualizer;
+use voronoi_visualizer::voronoi_visualizer::Visualizer;
 extern crate fastlem;
 
 #[test]
@@ -28,25 +30,17 @@ fn test_random_delaunay() {
 
     let sites = model.sites();
 
-    let image = terrain_visualizer::Visualizer::new(
+    let image = Visualizer::new(
         sites
             .iter()
-            .map(|n| {
-                (
-                    terrain_visualizer::Site { x: n.x, y: n.y },
-                    rng.gen_range(0.0..1.0),
-                )
-            })
-            .collect::<Vec<(terrain_visualizer::Site, f64)>>(),
+            .map(|n| (Site2D { x: n.x, y: n.y }, rng.gen_range(0.0..1.0)))
+            .collect::<Vec<(Site2D, f64)>>(),
     )
     .set_x_range(bound_min.x, bound_max.x)
     .set_y_range(bound_min.y, bound_max.y);
 
     image
-        .render_image(Some(1000), None, |weight_rate: f64| {
-            let c = (weight_rate * 220.0 + 30.0) as u8;
-            image::Rgb([c, c, c])
-        })
+        .render_image(Some(500), None)
         .unwrap()
         .save("image.png")
         .unwrap();
