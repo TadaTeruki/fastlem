@@ -1,7 +1,6 @@
 use fastlem::core::parameters::TopographicalParameters;
 use fastlem::lem::generator::TerrainGenerator;
 use fastlem::models::surface::{builder::TerrainModel2DBulider, sites::Site2D};
-use rand::Rng;
 mod voronoi_visualizer;
 use voronoi_visualizer::voronoi_visualizer::Visualizer;
 extern crate fastlem;
