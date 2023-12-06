@@ -15,9 +15,9 @@ fastlem is a Rust library that provides methods for creating virtual terrains ba
 |**Simple Landscape Evolution**|**Simple Terrain Generation**|
 |:---:|:---:|
 |![Simple Landscape Evolution](images/out/landscape_evolution.png)|![Simple Terrain Generation](images/out/terrain_generation.png)|
-|`$ cargo run --example landscape_evolution --release`|`$ cargo run --example terrain_generation --release`|
+|```$ cargo run --example landscape_evolution --release```|```$ cargo run --example terrain_generation --release```|
 
 |**Advanced Terrain Generation**|**Terrain Generation from Given Parameters**|
 |:---:|:---:|
 |![Advanced Terrain Generation](images/out/terrain_generation_advanced.png)|![Terrain Generation from Given Parameters](images/out/sample_terrain.png)|
-|`$ cargo run --example terrain_generation_advanced --release`|`$ cargo run --example sample_terrain --release`|
+|```$ cargo run --example terrain_generation_advanced --release```|```$ cargo run --example sample_terrain --release```|
