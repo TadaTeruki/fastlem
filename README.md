@@ -10,36 +10,14 @@ fastlem is a Rust library that provides methods for creating virtual terrains ba
 > [!WARNING]
 > This project is now in development. During `0.1.*`, the interface may change a lot.
 
-## Previews
+## Examples
 
-**Simple Landscape Evolution**
+|**Simple Landscape Evolution**|**Simple Terrain Generation**|
+|:---:|:---:|
+|![Simple Landscape Evolution](images/out/landscape_evolution.png)|![Simple Terrain Generation](images/out/terrain_generation.png)|
+|`$ cargo run --example landscape_evolution --release`|`$ cargo run --example terrain_generation --release`|
 
-```
-$ cargo run --example landscape_evolution --release
-```
-
-![Simple Landscape Evolution](images/out/landscape_evolution.png)
-
-**Simple Terrain Generation**
-
-```
-$ cargo run --example terrain_generation --release
-```
-
-![Simple Terrain Generation](images/out/terrain_generation.png)
-
-**Advanced Terrain Generation**
-
-```
-$ cargo run --example terrain_generation_advanced --release
-```
-
-![Advanced Terrain Generation](images/out/terrain_generation_advanced.png)
-
-**Terrain Generation from Given Parameters**
-
-```
-$ cargo run --example sample_terrain --release
-```
-
-![Terrain Generation from Given Parameters](images/out/sample_terrain.png)
+|**Advanced Terrain Generation**|**Terrain Generation from Given Parameters**|
+|:---:|:---:|
+|![Advanced Terrain Generation](images/out/terrain_generation_advanced.png)|![Terrain Generation from Given Parameters](images/out/sample_terrain.png)|
+|`$ cargo run --example terrain_generation_advanced --release`|`$ cargo run --example sample_terrain --release`|
