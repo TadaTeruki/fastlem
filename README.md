@@ -26,7 +26,7 @@ fastlem = "0.1.2"
 
 ## The Simulation Process
 
-fastlem uses Salève model[1] which provides analytical solution of the landscape evolution with SPIM(Stream Power Incision Model) in 2D. The algorithm for creating drainage network follows method from Guillaume Cordonnier, Jean Braun, Marie-Paule Cani, Bedrich Benes, Eric Galin, et al.[2].
+fastlem uses the Salève model[1], which provides an analytical solution to landscape evolution with SPIM (Stream Power Incision Model) in 2D. The algorithm for creating the drainage network follows the method of Guillaume Cordonnier, Jean Braun, Marie-Paule Cani, Bedrich Benes, Eric Galin, et al[2].
 
 ### Build a graph
 
@@ -55,8 +55,9 @@ let terrain_generator = TerrainGenerator::default()
             .collect::<_>(),
     );
 ```
- - **is_outlet** is whether the site can be an outlet (includes oceans) or not. If `is_outlet`, the altitude will be always set 0.0.
- - **erodibility** is the incision efficiency of the site. This is the main parameter to determine the shape of the terrain.
+
+ - **is_outlet** is whether the site can be an outlet (including oceans) or not. If `is_outlet`, the elevation is always set to 0.0.
+ - **erodibility** is the erodibility of the site. This is the main parameter that determines the shape of the terrain.
 
 ### Generate Terrain
 
@@ -123,8 +124,6 @@ for imgx in 0..img_width {
 image_buf.save("image.png").unwrap();
 ```
 
-If you want to know more about how to use the fastlem, the [examples](https://github.com/TadaTeruki/fastlem/tree/main/examples) and [API reference](https://docs.rs/fastlem/latest/fastlem/) are useful. Reading the [landscape_evolution.rs](https://github.com/TadaTeruki/fastlem/blob/main/examples/landscape_evolution.rs) is recommended as a first step.
-
 ### Reference 
 
 [1] Steer, P.: Short communication: Analytical models for 2D landscape evolution, Earth Surf. Dynam., 9, 1239–1250, https://doi.org/10.5194/esurf-9-1239-2021, 2021.
@@ -138,13 +137,13 @@ Contributions are welcome.
 
 The author is not a native English speaker. Please let me know if you find any grammatical errors in the documentation.
 
-Not only for that, feel free to open an issue or a pull request if you have any problems or proposals.
+Also, feel free to open an issue or pull request if you have any problems or suggestions.
 
 ## Documentation
 
 The [API reference](https://docs.rs/fastlem/latest/fastlem/) is available for this project.
 
-Also the [examples](https://github.com/TadaTeruki/fastlem/tree/main/examples) are useful. Reading the [landscape_evolution.rs](https://github.com/TadaTeruki/fastlem/blob/main/examples/landscape_evolution.rs) is recommended as a first step.
+The [examples](https://github.com/TadaTeruki/fastlem/tree/main/examples) are also useful. Reading the [landscape_evolution.rs](https://github.com/TadaTeruki/fastlem/blob/main/examples/landscape_evolution.rs) is recommended as a first step.
 
 ## License
 
