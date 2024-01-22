@@ -26,7 +26,7 @@ fastlem = "0.1.2"
 
 ## About the simulation
 
-fastlem follows the **Salève** model[1], which provides an analytical solution to landscape evolution with SPIM (Stream Power Incision Model) in 2D. The algorithm for creating the drainage network follows the method of Guillaume Cordonnier, Jean Braun, Marie-Paule Cani, Bedrich Benes, Eric Galin, et al[2].
+fastlem follows the **Salève** model[1], which is an analytical model for simulating landscape evolution in 2D. The algorithm for creating the drainage network follows the method of Guillaume Cordonnier, Jean Braun, Marie-Paule Cani, Bedrich Benes, Eric Galin, et al[2].
 
 ### Build a graph
 
