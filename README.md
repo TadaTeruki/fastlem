@@ -6,16 +6,16 @@
 [![Crates.io](https://img.shields.io/crates/v/fastlem)](https://crates.io/crates/fastlem)
 [![Documentation](https://docs.rs/fastlem/badge.svg)](https://docs.rs/fastlem)
 
-fastlem[/ˈfæstlɛm/] is a Rust library that provides methods for simulating erosion prcess based on a landscape evolution model (LEM). This enables you to create realistic terrain data with plausible reliefs.
+**fastlem** [/ˈfæstlɛm/] is a rust library that provides methods for simulating landscape evolution processes to create realistic terrain data with plausible relief.
 
-**[fastlem web simulator](https://fastlem.peruki.dev/)** is available to try creating virtual terrain manually with fastlem.
+The **[fastlem web simulator](https://fastlem.peruki.dev/)** is available to try out manually creating virtual terrain with fastlem.
 ![fastlemweb2](https://github.com/TadaTeruki/fastlem/assets/69315285/1a98d63d-853d-4e76-bba5-b399f4772bf2)
 
 ## Installation
 
 
 > [!WARNING]
-> This project is now in development. During `0.1.*`, the interface may change a lot.
+> This project is currently under development. During `0.1.*` the interface may change a lot.
 > 
 > It is recommended to specify the version in detail.
 
@@ -24,9 +24,9 @@ fastlem[/ˈfæstlɛm/] is a Rust library that provides methods for simulating er
 fastlem = "0.1.2"
 ```
 
-## About the simulation process
+## About the simulation
 
-fastlem uses the Salève model[1], which provides an analytical solution to landscape evolution with SPIM (Stream Power Incision Model) in 2D. The algorithm for creating the drainage network follows the method of Guillaume Cordonnier, Jean Braun, Marie-Paule Cani, Bedrich Benes, Eric Galin, et al[2].
+fastlem follows the Salève model[1], which provides an analytical solution to landscape evolution with SPIM (Stream Power Incision Model) in 2D. The algorithm for creating the drainage network follows the method of Guillaume Cordonnier, Jean Braun, Marie-Paule Cani, Bedrich Benes, Eric Galin, et al[2].
 
 ### Build a graph
 
@@ -134,10 +134,7 @@ image_buf.save("image.png").unwrap();
 ## Contributing
 
 Contributions are welcome.
-
-The author is not a native English speaker. Please let me know if you find any grammatical errors in the documentation.
-
-Also, feel free to open an issue or pull request if you have any problems or suggestions.
+Feel free to open an issue or pull request if you have any problems or suggestions.
 
 ## Documentation
 
