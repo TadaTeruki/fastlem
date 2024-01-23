@@ -6,7 +6,7 @@ use crate::{
     core::{
         parameters::TopographicalParameters,
         traits::{Model, Site},
-        units::{Altitude, Length, Step},
+        units::{Elevation, Length, Step},
     },
     lem::drainage_basin::DrainageBasin,
     lem::stream_tree,
@@ -29,9 +29,9 @@ pub enum GenerationError {
 ///
 /// ### Required properties
 ///  - `model` is the vector representation of the terrain network.
-///  - `parameters` is the topographical parameters of sites. Each parameter contains the uplift rates, erodibilities, base altitudes and maximum slopes (see [TopographicalParameters] for details).
+///  - `parameters` is the topographical parameters of sites. Each parameter contains the uplift rates, erodibilities, base elevations and maximum slopes (see [TopographicalParameters] for details).
 /// ### Optional properties
-///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the altitudes of all sites are stable.
+///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the elevations of all sites are stable.
 ///
 pub struct TerrainGenerator<S, M, T>
 where
@@ -82,8 +82,8 @@ where
 
     /// Set the maximum number of iterations.
     ///
-    /// The iteration(loop) for calculating altitudes will be stopped when the number of iterations reaches `max_iteration`.
-    /// If not set, the iterations will be repeated until the altitudes of all sites are stable.
+    /// The iteration(loop) for calculating elevations will be stopped when the number of iterations reaches `max_iteration`.
+    /// If not set, the iterations will be repeated until the elevations of all sites are stable.
     pub fn set_max_iteration(self, max_iteration: Step) -> Self {
         Self {
             max_iteration: Some(max_iteration),
@@ -138,22 +138,22 @@ where
 
         let mut rng: StdRng = SeedableRng::from_seed([0u8; 32]);
 
-        let altitudes: Vec<Altitude> = {
-            let mut altitudes = parameters
+        let elevations: Vec<Elevation> = {
+            let mut elevations = parameters
                 .iter()
-                .map(|a| a.base_altitude + rng.gen::<f64>() * f64::EPSILON)
+                .map(|a| a.base_elevation + rng.gen::<f64>() * f64::EPSILON)
                 .collect::<Vec<_>>();
             let mut step = 0;
 
             loop {
                 let stream_tree =
-                    stream_tree::StreamTree::construct(sites, &altitudes, graph, &outlets);
+                    stream_tree::StreamTree::construct(sites, &elevations, graph, &outlets);
 
                 let mut drainage_areas = areas.to_vec();
                 let mut response_times = vec![0.0; num];
                 let mut changed = false;
 
-                // calculate altitudes for each drainage basin
+                // calculate elevations for each drainage basin
                 outlets.iter().for_each(|&outlet| {
                     // construct drainage basin
                     let drainage_basin = DrainageBasin::construct(outlet, &stream_tree, graph);
@@ -181,9 +181,9 @@ where
                         response_times[i] += response_times[j] + 1.0 / celerity * distance;
                     });
 
-                    // calculate altitudes
+                    // calculate elevations
                     drainage_basin.for_each_upstream(|i| {
-                        let mut new_altitude = altitudes[outlet]
+                        let mut new_elevation = elevations[outlet]
                             + parameters[i].uplift_rate
                                 * (response_times[i] - response_times[outlet]).max(0.0);
 
@@ -200,18 +200,18 @@ where
                                 }
                             };
                             let max_slope = max_slope.tan();
-                            let slope = (new_altitude - altitudes[j]) / distance;
+                            let slope = (new_elevation - elevations[j]) / distance;
                             if slope > max_slope {
-                                new_altitude = altitudes[j] + max_slope * distance;
+                                new_elevation = elevations[j] + max_slope * distance;
                             }
                         }
 
-                        changed |= new_altitude != altitudes[i];
-                        altitudes[i] = new_altitude;
+                        changed |= new_elevation != elevations[i];
+                        elevations[i] = new_elevation;
                     });
                 });
 
-                // if the altitudes of all sites are stable, break
+                // if the elevations of all sites are stable, break
                 if !changed {
                     break;
                 }
@@ -223,9 +223,9 @@ where
                 }
             }
 
-            altitudes
+            elevations
         };
 
-        Ok(model.create_terrain_from_result(&altitudes))
+        Ok(model.create_terrain_from_result(&elevations))
     }
 }

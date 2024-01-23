@@ -1,4 +1,4 @@
-use crate::core::units::Altitude;
+use crate::core::units::Elevation;
 
 use super::sites::Site2D;
 
@@ -13,9 +13,9 @@ impl TerrainInterpolator2D {
         }
     }
 
-    pub fn interpolate(&self, altitudes: &[Altitude], site: &Site2D) -> Option<Altitude> {
+    pub fn interpolate(&self, elevations: &[Elevation], site: &Site2D) -> Option<Elevation> {
         self.interpolator.interpolate(
-            altitudes,
+            elevations,
             naturalneighbor::Point {
                 x: site.x,
                 y: site.y,

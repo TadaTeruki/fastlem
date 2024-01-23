@@ -3,7 +3,7 @@ use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
 use crate::core::{
     traits::Site,
-    units::{Altitude, Length},
+    units::{Elevation, Length},
 };
 
 /// Tree structure for representing the flow of water.
@@ -71,7 +71,7 @@ impl StreamTree {
     /// Constructs a stream tree from a given terrain data.
     pub fn construct<S: Site>(
         sites: &[S],
-        altitudes: &[Altitude],
+        elevations: &[Elevation],
         graph: &EdgeAttributedUndirectedGraph<Length>,
         outlets: &[usize],
     ) -> Self {
@@ -82,7 +82,7 @@ impl StreamTree {
 
         // `next` is the next site of each site in the flow.
         // at this point, the stream tree can create lakes: a root of a stream tree not connected to an outlet.
-        let next = Self::construct_initial_stream_tree(num, altitudes, graph, &is_outlet);
+        let next = Self::construct_initial_stream_tree(num, elevations, graph, &is_outlet);
 
         // `subroot` is the root of each site in the flow. lakes are not removed yet.
         let (subroot, has_lake) = Self::find_roots_with_lakes(num, &is_outlet, &next);
@@ -108,7 +108,7 @@ impl StreamTree {
 
     fn construct_initial_stream_tree(
         num: usize,
-        altitudes: &[Altitude],
+        elevations: &[Elevation],
         graph: &EdgeAttributedUndirectedGraph<Length>,
         is_outlet: &[bool],
     ) -> Vec<usize> {
@@ -122,9 +122,9 @@ impl StreamTree {
             let mut steepest_slope = 0.0;
             graph.neighbors_of(i).iter().for_each(|ja| {
                 let j = ja.0;
-                if altitudes[i] > altitudes[j] {
+                if elevations[i] > elevations[j] {
                     let distance = ja.1;
-                    let down_hill_slope = (altitudes[i] - altitudes[j]) / distance;
+                    let down_hill_slope = (elevations[i] - elevations[j]) / distance;
                     if down_hill_slope > steepest_slope {
                         steepest_slope = down_hill_slope;
                         next[i] = j;

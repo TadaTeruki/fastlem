@@ -35,13 +35,13 @@ fn main() {
 
     // Render to image.
     // In this example, the terrain is represented by small rectangles, resulting in many voids between the rectangles.
-    // The color of the rectangle is determined by the altitude of the site.
+    // The color of the rectangle is determined by the elevation of the site.
     let img_width = 500;
     let img_height = 500;
 
     let mut image_buf = image::RgbImage::new(img_width, img_height);
-    let max_altitude = terrain
-        .altitudes()
+    let max_elevation = terrain
+        .elevations()
         .iter()
         .fold(std::f64::MIN, |acc, &n| n.max(acc));
 
@@ -50,9 +50,9 @@ fn main() {
             let x = bound_max.x * (imgx as f64 / img_width as f64);
             let y = bound_max.y * (imgy as f64 / img_height as f64);
             let site = Site2D { x, y };
-            let altitude = terrain.get_altitude(&site);
-            if let Some(altitude) = altitude {
-                let color = ((altitude / max_altitude) * 255.0) as u8;
+            let elevation = terrain.get_elevation(&site);
+            if let Some(elevation) = elevation {
+                let color = ((elevation / max_elevation) * 255.0) as u8;
                 image_buf.put_pixel(imgx as u32, imgy as u32, image::Rgb([color, color, color]));
             }
         }

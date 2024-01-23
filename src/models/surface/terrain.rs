@@ -1,24 +1,24 @@
-use crate::core::units::Altitude;
+use crate::core::units::Elevation;
 
 use super::{interpolator::TerrainInterpolator2D, sites::Site2D};
 
-/// Represents the result of terrain generation includeing the pair of sites and result altitudes.
-/// Terrain2D also provides a method for query the interpolated altitudes.
+/// Represents the result of terrain generation includeing the pair of sites and result Elevations.
+/// Terrain2D also provides a method for query the interpolated elevations.
 pub struct Terrain2D {
     sites: Vec<Site2D>,
-    altitudes: Vec<Altitude>,
+    elevations: Vec<Elevation>,
     interpolator: TerrainInterpolator2D,
 }
 
 impl Terrain2D {
     pub fn new(
         sites: Vec<Site2D>,
-        altitudes: Vec<Altitude>,
+        elevations: Vec<Elevation>,
         interpolator: TerrainInterpolator2D,
     ) -> Self {
         Self {
             sites,
-            altitudes,
+            elevations,
             interpolator,
         }
     }
@@ -27,12 +27,12 @@ impl Terrain2D {
         &self.sites
     }
 
-    pub fn altitudes(&self) -> &[Altitude] {
-        &self.altitudes
+    pub fn elevations(&self) -> &[Elevation] {
+        &self.elevations
     }
 
-    /// Get interpolated altitude.
-    pub fn get_altitude(&self, site: &Site2D) -> Option<Altitude> {
-        self.interpolator.interpolate(&self.altitudes, site)
+    /// Get interpolated elevation.
+    pub fn get_elevation(&self, site: &Site2D) -> Option<Elevation> {
+        self.interpolator.interpolate(&self.elevations, site)
     }
 }

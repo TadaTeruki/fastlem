@@ -22,7 +22,7 @@ fn test_landscape_evolution() {
             (0..num)
                 .map(|_| {
                     TopographicalParameters::default()
-                        .set_base_altitude(0.0)
+                        .set_base_elevation(0.0)
                         .set_erodibility(1.0)
                         .set_uplift_rate(1.0)
                         .set_is_outlet(false)
@@ -34,13 +34,13 @@ fn test_landscape_evolution() {
         .unwrap();
 
     let sites = terrain.sites();
-    let altitudes = terrain.altitudes();
+    let elevations = terrain.elevations();
 
     let image = Visualizer::new(
         sites
             .iter()
             .enumerate()
-            .map(|(i, n)| (Site2D { x: n.x, y: n.y }, altitudes[i]))
+            .map(|(i, n)| (Site2D { x: n.x, y: n.y }, elevations[i]))
             .collect::<Vec<(Site2D, f64)>>(),
     )
     .set_x_range(bound_min.x, bound_max.x)

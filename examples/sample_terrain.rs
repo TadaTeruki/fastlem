@@ -142,7 +142,7 @@ fn main() {
         .generate()
         .unwrap();
 
-    // (color: [u8; 3], altitude: f64)
+    // (color: [u8; 3], elevation: f64)
     let color_table: Vec<([u8; 3], f64)> = vec![
         ([70, 150, 200], 0.0),
         ([240, 240, 210], 0.5),
@@ -151,12 +151,12 @@ fn main() {
         ([15, 60, 15], 30.0),
     ];
 
-    // get color from altitude
-    let get_color = |altitude: f64| -> [u8; 3] {
+    // get color from elevation
+    let get_color = |elevation: f64| -> [u8; 3] {
         let color_index = {
             let mut i = 0;
             while i < color_table.len() {
-                if altitude < color_table[i].1 {
+                if elevation < color_table[i].1 {
                     break;
                 }
                 i += 1;
@@ -175,7 +175,7 @@ fn main() {
             let prop_a = color_a.1;
             let prop_b = color_b.1;
 
-            let prop = (altitude - prop_a) / (prop_b - prop_a);
+            let prop = (elevation - prop_a) / (prop_b - prop_a);
 
             let color = [
                 (color_a.0[0] as f64 + (color_b.0[0] as f64 - color_a.0[0] as f64) * prop) as u8,
@@ -197,9 +197,9 @@ fn main() {
             let x = bound_max.x * (imgx as f64 / img_width as f64);
             let y = bound_max.y * (imgy as f64 / img_height as f64);
             let site = Site2D { x, y };
-            let altitude = terrain.get_altitude(&site);
-            if let Some(altitude) = altitude {
-                let color = get_color(altitude);
+            let elevation = terrain.get_elevation(&site);
+            if let Some(elevation) = elevation {
+                let color = get_color(elevation);
                 image_buf.put_pixel(imgx as u32, imgy as u32, image::Rgb(color));
             }
         }

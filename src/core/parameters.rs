@@ -1,12 +1,12 @@
 use naturalneighbor::Lerpable;
 
-use super::units::{Altitude, Erodibility, Slope, UpliftRate};
+use super::units::{Elevation, Erodibility, Slope, UpliftRate};
 
 /// The topographical parameters of sites.
 /// The shape of the terrain will be determined by these parameters.
 ///
 /// ### Properties
-///  - `base_altitude` is the initial altitude (unit: L).
+///  - `base_elevation` is the initial elevation (unit: L).
 ///     The default value is 0.0 which is recommended if you create a terrain from scratch.
 ///
 ///  - `erodibility` is the erodibility.
@@ -16,13 +16,13 @@ use super::units::{Altitude, Erodibility, Slope, UpliftRate};
 ///     The default value is 1.0. Configuring this value is not recommended.
 ///
 ///  - `is_outlet` is whether the site is an outlet or not.
-///     The altitude will be always set 0.0 if the site is outlet.
+///     The elevation will be always set 0.0 if the site is outlet.
 ///
 ///  - `max_slope` is the maximum slope (unit: rad). This value must be in the range of [0, π/2).
 ///     You can set `None` if you don't want to set the maximum slope.
 #[derive(Debug, Clone)]
 pub struct TopographicalParameters {
-    pub(crate) base_altitude: Altitude,
+    pub(crate) base_elevation: Elevation,
     pub(crate) erodibility: Erodibility,
     pub(crate) uplift_rate: UpliftRate,
     pub(crate) is_outlet: bool,
@@ -32,7 +32,7 @@ pub struct TopographicalParameters {
 impl Default for TopographicalParameters {
     fn default() -> Self {
         Self {
-            base_altitude: 0.0,
+            base_elevation: 0.0,
             erodibility: 1.0,
             uplift_rate: 1.0,
             is_outlet: false,
@@ -42,9 +42,9 @@ impl Default for TopographicalParameters {
 }
 
 impl TopographicalParameters {
-    pub fn set_base_altitude(self, base_altitude: Altitude) -> Self {
+    pub fn set_base_elevation(self, base_elevation: Elevation) -> Self {
         Self {
-            base_altitude,
+            base_elevation,
             ..self
         }
     }
@@ -74,7 +74,7 @@ impl TopographicalParameters {
 
 impl Lerpable for TopographicalParameters {
     fn lerp(&self, other: &Self, prop: f64) -> Self {
-        let base_altitude = self.base_altitude * (1.0 - prop) + other.base_altitude * prop;
+        let base_elevation = self.base_elevation * (1.0 - prop) + other.base_elevation * prop;
         let uplift_rate = self.uplift_rate * (1.0 - prop) + other.uplift_rate * prop;
         let erodibility = self.erodibility * (1.0 - prop) + other.erodibility * prop;
         let is_outlet = self.is_outlet || other.is_outlet;
@@ -88,7 +88,7 @@ impl Lerpable for TopographicalParameters {
             other.max_slope
         };
         TopographicalParameters {
-            base_altitude,
+            base_elevation,
             uplift_rate,
             erodibility,
             is_outlet,

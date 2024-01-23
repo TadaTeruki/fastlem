@@ -1,6 +1,6 @@
 use terrain_graph::edge_attributed_undirected::EdgeAttributedUndirectedGraph;
 
-use super::units::{Altitude, Area, Length};
+use super::units::{Area, Elevation, Length};
 
 pub trait Site: Copy + Clone + Default {
     /// Calculate the distance between two sites.
@@ -16,5 +16,5 @@ pub trait Model<S: Site, T> {
     fn areas(&self) -> &[Area];
     fn default_outlets(&self) -> &[usize];
     fn graph(&self) -> &EdgeAttributedUndirectedGraph<Length>;
-    fn create_terrain_from_result(&self, altitude: &[Altitude]) -> T;
+    fn create_terrain_from_result(&self, elevation: &[Elevation]) -> T;
 }

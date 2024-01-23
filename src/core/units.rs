@@ -1,8 +1,8 @@
 /// Length (unit: L);
 pub type Length = f64;
 
-/// Altitude (unit: L).
-pub type Altitude = f64;
+/// Elevation (unit: L).
+pub type Elevation = f64;
 
 /// Uplift rate (unit: L/T).
 pub type UpliftRate = f64;

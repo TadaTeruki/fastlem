@@ -241,8 +241,8 @@ fn main() {
     );
     let colormap_table = (vec![colormap_warm, colormap_dry], vec![0.35, 0.55]);
 
-    // get color from altitude
-    let get_color = |site: Site2D, altitude: f64| -> [u8; 3] {
+    // get color from elevation
+    let get_color = |site: Site2D, elevation: f64| -> [u8; 3] {
         let climate_scale = 75.0;
         let site = apply_fault(&site);
         let noise_climate = octaved_perlin(
@@ -258,19 +258,19 @@ fn main() {
             return get_interporated_color(
                 &colormap_table.0[colormap_a].0,
                 &colormap_table.0[colormap_a].1,
-                altitude,
+                elevation,
             );
         } else {
             let (color_a, color_b) = (
                 get_interporated_color(
                     &colormap_table.0[colormap_a].0,
                     &colormap_table.0[colormap_a].1,
-                    altitude,
+                    elevation,
                 ),
                 get_interporated_color(
                     &colormap_table.0[colormap_b].0,
                     &colormap_table.0[colormap_b].1,
-                    altitude,
+                    elevation,
                 ),
             );
             let prop = (noise_climate - colormap_table.1[colormap_a])
@@ -287,7 +287,7 @@ fn main() {
     let shadow_angle: f64 = 3.14 * 0.25;
     let shadow_dist_x = shadow_dist * shadow_angle.cos();
     let shadow_dist_y = shadow_dist * shadow_angle.sin();
-    let shadow_altitude = 50.0;
+    let shadow_elevation = 50.0;
 
     let mut image_buf = image::RgbImage::new(img_width, img_height);
 
@@ -302,13 +302,13 @@ fn main() {
                 x: x + shadow_dist_x,
                 y: y + shadow_dist_y,
             };
-            let altitude = terrain.get_altitude(&site);
-            let altitude2 = terrain.get_altitude(&site2);
+            let elevation = terrain.get_elevation(&site);
+            let elevation2 = terrain.get_elevation(&site2);
 
-            if let (Some(altitude), Some(altitude2)) = (altitude, altitude2) {
-                let brightness = 1.0 - ((altitude - altitude2) / shadow_altitude).atan().sin();
+            if let (Some(elevation), Some(elevation2)) = (elevation, elevation2) {
+                let brightness = 1.0 - ((elevation - elevation2) / shadow_elevation).atan().sin();
 
-                let color = apply_brightness(get_color(site, altitude), brightness);
+                let color = apply_brightness(get_color(site, elevation), brightness);
                 image_buf.put_pixel(imgx as u32, imgy as u32, image::Rgb(color));
             }
         }
@@ -403,10 +403,10 @@ fn get_surounding_index(props: &Vec<f64>, target: f64) -> (usize, usize) {
     }
 }
 
-fn get_interporated_color(colors: &Vec<[u8; 3]>, altitudes: &Vec<f64>, altitude: f64) -> [u8; 3] {
-    let (index_a, index_b) = get_surounding_index(altitudes, altitude);
+fn get_interporated_color(colors: &Vec<[u8; 3]>, elevations: &Vec<f64>, elevation: f64) -> [u8; 3] {
+    let (index_a, index_b) = get_surounding_index(elevations, elevation);
     let color_a = colors[index_a];
     let color_b = colors[index_b];
-    let prop = (altitude - altitudes[index_a]) / (altitudes[index_b] - altitudes[index_a]);
+    let prop = (elevation - elevations[index_a]) / (elevations[index_b] - elevations[index_a]);
     lerp_color(color_a, color_b, prop.min(1.0).max(0.0))
 }
