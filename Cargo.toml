@@ -1,6 +1,6 @@
 [package]
 name = "fastlem"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 license = "MPL-2.0"
 description = "A Rust library for generating procedural terrains based on simplified landscape evolution model (LEM)"

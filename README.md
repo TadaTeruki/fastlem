@@ -23,7 +23,7 @@ The **[fastlem web simulator](https://fastlem.peruki.dev/)** is available to try
 
 ```
 [dependencies]
-fastlem = "0.1.2"
+fastlem = "0.1.3"
 ```
 
 ## About the simulation
