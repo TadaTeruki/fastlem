@@ -137,9 +137,8 @@ where
                 .iter()
                 .map(|a| a.base_elevation + rng.gen::<f64>() * f64::EPSILON)
                 .collect::<Vec<_>>();
-            let mut step = 0;
 
-            loop {
+            for _ in 0..self.max_iteration.unwrap_or(u32::MAX) {
                 let stream_tree =
                     stream_tree::StreamTree::construct(sites, &elevations, graph, &outlets);
 
@@ -208,12 +207,6 @@ where
                 // if the elevations of all sites are stable, break
                 if !changed {
                     break;
-                }
-                step += 1;
-                if let Some(max_iteration) = &self.max_iteration {
-                    if step >= *max_iteration {
-                        break;
-                    }
                 }
             }
 
