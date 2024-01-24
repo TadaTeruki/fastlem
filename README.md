@@ -146,7 +146,7 @@ The [examples](https://github.com/TadaTeruki/fastlem/tree/main/examples) are als
 
 ## License
 
-MIT
+MPL-2.0
 
 ## Preview of Examples
 

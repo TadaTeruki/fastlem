@@ -2,7 +2,7 @@
 name = "fastlem"
 version = "0.1.2"
 edition = "2021"
-license = "MIT"
+license = "MPL-2.0"
 description = "A Rust library for generating procedural terrains based on simplified landscape evolution model (LEM)"
 authors = ["Teruki TADA <tadateruki.public@gmail.com>"]
 
