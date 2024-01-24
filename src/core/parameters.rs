@@ -42,33 +42,29 @@ impl Default for TopographicalParameters {
 }
 
 impl TopographicalParameters {
-    pub fn set_base_elevation(self, base_elevation: Elevation) -> Self {
-        Self {
-            base_elevation,
-            ..self
-        }
+    pub fn set_base_elevation(mut self, base_elevation: Elevation) -> Self {
+        self.base_elevation = base_elevation;
+        self
     }
 
-    pub fn set_erodibility(self, erodibility: Erodibility) -> Self {
-        Self {
-            erodibility,
-            ..self
-        }
+    pub fn set_erodibility(mut self, erodibility: Erodibility) -> Self {
+        self.erodibility = erodibility;
+        self
     }
 
-    pub fn set_uplift_rate(self, uplift_rate: UpliftRate) -> Self {
-        Self {
-            uplift_rate,
-            ..self
-        }
+    pub fn set_uplift_rate(mut self, uplift_rate: UpliftRate) -> Self {
+        self.uplift_rate = uplift_rate;
+        self
     }
 
-    pub fn set_is_outlet(self, is_outlet: bool) -> Self {
-        Self { is_outlet, ..self }
+    pub fn set_is_outlet(mut self, is_outlet: bool) -> Self {
+        self.is_outlet = is_outlet;
+        self
     }
 
-    pub fn set_max_slope(self, max_slope: Option<Slope>) -> Self {
-        Self { max_slope, ..self }
+    pub fn set_max_slope(mut self, max_slope: Option<Slope>) -> Self {
+        self.max_slope = max_slope;
+        self
     }
 }
 

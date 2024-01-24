@@ -65,30 +65,24 @@ where
     M: Model<S, T>,
 {
     /// Set the model that contains the set of sites.
-    pub fn set_model(self, model: M) -> Self {
-        Self {
-            model: Some(model),
-            ..self
-        }
+    pub fn set_model(mut self, model: M) -> Self {
+        self.model = Some(model);
+        self
     }
 
     /// Set the topographical parameters of sites. See [TopographicalParameters] about the parameters.
-    pub fn set_parameters(self, parameters: Vec<TopographicalParameters>) -> Self {
-        Self {
-            parameters: Some(parameters),
-            ..self
-        }
+    pub fn set_parameters(mut self, parameters: Vec<TopographicalParameters>) -> Self {
+        self.parameters = Some(parameters);
+        self
     }
 
     /// Set the maximum number of iterations.
     ///
     /// The iteration(loop) for calculating elevations will be stopped when the number of iterations reaches `max_iteration`.
     /// If not set, the iterations will be repeated until the elevations of all sites are stable.
-    pub fn set_max_iteration(self, max_iteration: Step) -> Self {
-        Self {
-            max_iteration: Some(max_iteration),
-            ..self
-        }
+    pub fn set_max_iteration(mut self, max_iteration: Step) -> Self {
+        self.max_iteration = Some(max_iteration);
+        self
     }
 
     /// Generate terrain.
@@ -149,7 +143,7 @@ where
                 let stream_tree =
                     stream_tree::StreamTree::construct(sites, &elevations, graph, &outlets);
 
-                let mut drainage_areas = areas.to_vec();
+                let mut drainage_areas: Vec<f64> = areas.to_vec();
                 let mut response_times = vec![0.0; num];
                 let mut changed = false;
 

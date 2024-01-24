@@ -52,7 +52,7 @@ impl TerrainModel2DBulider {
     }
 
     pub fn add_edge_sites(
-        self,
+        mut self,
         edge_num_x: Option<usize>,
         edge_num_y: Option<usize>,
     ) -> Result<Self, ModelBuilderError> {
@@ -93,8 +93,6 @@ impl TerrainModel2DBulider {
             },
         ];
 
-        //let edge_num = edge_num.unwrap_or((sites.len() as f64).sqrt() as usize);
-
         let edge_sites = corners
             .iter()
             .enumerate()
@@ -128,35 +126,33 @@ impl TerrainModel2DBulider {
 
         let sites = sites.into_iter().chain(edge_sites).collect::<Vec<_>>();
 
-        Ok(Self {
-            sites: Some(sites),
-            ..self
-        })
+        self.sites = Some(sites);
+        Ok(self)
     }
 
     /// Set sites.
-    pub fn set_sites(self, sites: Vec<Site2D>) -> Self {
-        Self {
-            sites: Some(sites),
-            ..self
-        }
+    pub fn set_sites(mut self, sites: Vec<Site2D>) -> Self {
+        self.sites = Some(sites);
+        self
     }
 
     /// Set the bounding rectangle of the sites.
     ///
     /// If `bound_min` and `bound_max` is `None`, the bounding rectangle will be
     /// computed from the sites.
-    pub fn set_bounding_box(self, bound_min: Option<Site2D>, bound_max: Option<Site2D>) -> Self {
-        Self {
-            bound_min,
-            bound_max,
-            ..self
-        }
+    pub fn set_bounding_box(
+        mut self,
+        bound_min: Option<Site2D>,
+        bound_max: Option<Site2D>,
+    ) -> Self {
+        self.bound_min = bound_min;
+        self.bound_max = bound_max;
+        self
     }
 
     /// Relocate the sites to apploximately evenly spaced positions using Lloyd's algorithm.
     /// The number of times for Lloyd's algorithm is specified by `times`.
-    pub fn relaxate_sites(self, times: usize) -> Result<Self, ModelBuilderError> {
+    pub fn relaxate_sites(mut self, times: usize) -> Result<Self, ModelBuilderError> {
         if times == 0 {
             return Ok(self);
         }
@@ -190,19 +186,17 @@ impl TerrainModel2DBulider {
             .build();
 
         if let Some(voronoi) = voronoi_opt {
-            return Ok(Self {
-                sites: Some(
-                    voronoi
-                        .sites()
-                        .iter()
-                        .map(|s| Site2D { x: s.x, y: s.y })
-                        .collect::<Vec<Site2D>>(),
-                ),
-                ..self
-            });
+            self.sites = Some(
+                voronoi
+                    .sites()
+                    .iter()
+                    .map(|s| Site2D { x: s.x, y: s.y })
+                    .collect::<Vec<Site2D>>(),
+            );
+            Ok(self)
+        } else {
+            Err(ModelBuilderError::VoronoiError)
         }
-
-        Ok(self)
     }
 
     pub fn build(&self) -> Result<TerrainModel2D, ModelBuilderError> {
