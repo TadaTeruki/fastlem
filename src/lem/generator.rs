@@ -6,7 +6,7 @@ use crate::{
     core::{
         parameters::TopographicalParameters,
         traits::{Model, Site},
-        units::{Elevation, Length, Step},
+        units::{Length, Step},
     },
     lem::drainage_basin::DrainageBasin,
     lem::stream_tree,
@@ -130,37 +130,57 @@ where
             }
         };
 
-        let mut rng: StdRng = SeedableRng::from_seed([0u8; 32]);
+        let mut rng: StdRng = SeedableRng::seed_from_u64(0);
+        let mut elevations = parameters
+            .iter()
+            .map(|a| a.base_elevation + rng.gen::<f64>() * f64::EPSILON)
+            .collect::<Vec<_>>();
 
-        let elevations: Vec<Elevation> = {
-            let mut elevations = parameters
-                .iter()
-                .map(|a| a.base_elevation + rng.gen::<f64>() * f64::EPSILON)
-                .collect::<Vec<_>>();
+        for _ in 0..self.max_iteration.unwrap_or(u32::MAX) {
+            let stream_tree =
+                stream_tree::StreamTree::construct(sites, &elevations, graph, &outlets);
 
-            for _ in 0..self.max_iteration.unwrap_or(u32::MAX) {
-                let stream_tree =
-                    stream_tree::StreamTree::construct(sites, &elevations, graph, &outlets);
+            let mut drainage_areas: Vec<f64> = areas.to_vec();
+            let mut response_times = vec![0.0; num];
+            let mut changed = false;
 
-                let mut drainage_areas: Vec<f64> = areas.to_vec();
-                let mut response_times = vec![0.0; num];
-                let mut changed = false;
+            // calculate elevations for each drainage basin
+            outlets.iter().for_each(|&outlet| {
+                // construct drainage basin
+                let drainage_basin = DrainageBasin::construct(outlet, &stream_tree, graph);
 
-                // calculate elevations for each drainage basin
-                outlets.iter().for_each(|&outlet| {
-                    // construct drainage basin
-                    let drainage_basin = DrainageBasin::construct(outlet, &stream_tree, graph);
+                // calculate drainage areas
+                drainage_basin.for_each_downstream(|i| {
+                    let j = stream_tree.next[i];
+                    if j != i {
+                        drainage_areas[j] += drainage_areas[i];
+                    }
+                });
 
-                    // calculate drainage areas
-                    drainage_basin.for_each_downstream(|i| {
-                        let j = stream_tree.next[i];
-                        if j != i {
-                            drainage_areas[j] += drainage_areas[i];
+                // calculate response times
+                drainage_basin.for_each_upstream(|i| {
+                    let j = stream_tree.next[i];
+                    let distance: Length = {
+                        let (ok, edge) = graph.has_edge(i, j);
+                        if ok {
+                            edge
+                        } else {
+                            1.0
                         }
-                    });
+                    };
+                    let celerity = parameters[i].erodibility * drainage_areas[i].powf(m_exp);
+                    response_times[i] += response_times[j] + 1.0 / celerity * distance;
+                });
 
-                    // calculate response times
-                    drainage_basin.for_each_upstream(|i| {
+                // calculate elevations
+                drainage_basin.for_each_upstream(|i| {
+                    let mut new_elevation = elevations[outlet]
+                        + parameters[i].uplift_rate
+                            * (response_times[i] - response_times[outlet]).max(0.0);
+
+                    // check if the slope is too steep
+                    // if max_slope_func is not set, the slope is not checked
+                    if let Some(max_slope) = parameters[i].max_slope {
                         let j = stream_tree.next[i];
                         let distance: Length = {
                             let (ok, edge) = graph.has_edge(i, j);
@@ -170,48 +190,23 @@ where
                                 1.0
                             }
                         };
-                        let celerity = parameters[i].erodibility * drainage_areas[i].powf(m_exp);
-                        response_times[i] += response_times[j] + 1.0 / celerity * distance;
-                    });
-
-                    // calculate elevations
-                    drainage_basin.for_each_upstream(|i| {
-                        let mut new_elevation = elevations[outlet]
-                            + parameters[i].uplift_rate
-                                * (response_times[i] - response_times[outlet]).max(0.0);
-
-                        // check if the slope is too steep
-                        // if max_slope_func is not set, the slope is not checked
-                        if let Some(max_slope) = parameters[i].max_slope {
-                            let j = stream_tree.next[i];
-                            let distance: Length = {
-                                let (ok, edge) = graph.has_edge(i, j);
-                                if ok {
-                                    edge
-                                } else {
-                                    1.0
-                                }
-                            };
-                            let max_slope = max_slope.tan();
-                            let slope = (new_elevation - elevations[j]) / distance;
-                            if slope > max_slope {
-                                new_elevation = elevations[j] + max_slope * distance;
-                            }
+                        let max_slope = max_slope.tan();
+                        let slope = (new_elevation - elevations[j]) / distance;
+                        if slope > max_slope {
+                            new_elevation = elevations[j] + max_slope * distance;
                         }
+                    }
 
-                        changed |= new_elevation != elevations[i];
-                        elevations[i] = new_elevation;
-                    });
+                    changed |= new_elevation != elevations[i];
+                    elevations[i] = new_elevation;
                 });
+            });
 
-                // if the elevations of all sites are stable, break
-                if !changed {
-                    break;
-                }
+            // if the elevations of all sites are stable, break
+            if !changed {
+                break;
             }
-
-            elevations
-        };
+        }
 
         Ok(model.create_terrain_from_result(&elevations))
     }
