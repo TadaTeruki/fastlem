@@ -13,7 +13,7 @@ use super::units::{Elevation, Erodibility, Slope, UpliftRate};
 ///     This is the main parameter to determine the shape of the terrain.
 ///
 ///  - `uplift_rate` is the uplift rate (unit: L/T).
-///     The default value is 1.0. Configuring this value is not recommended.
+///     The default value is 1.0. Configuring this value is still not recommended.
 ///
 ///  - `is_outlet` is whether the site is an outlet or not.
 ///     The elevation will be always set 0.0 if the site is outlet.

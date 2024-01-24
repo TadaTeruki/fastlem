@@ -9,15 +9,15 @@ authors = ["Teruki TADA <tadateruki.public@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rtree_rs = "0.1"
-voronoice = "0.2"
+rtree_rs = "0.1.4"
+voronoice = "0.2.0"
 terrain-graph = "1.0"
-naturalneighbor = "1.1"
-rand = "0.8"
+naturalneighbor = "1.2.1"
+rand = "0.8.5"
 thiserror = "1.0"
 
 [dev-dependencies]
-image = "0.24"
-noise = "0.8"
+image = "0.24.8"
+noise = "0.8.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

@@ -14,12 +14,14 @@ impl TerrainInterpolator2D {
     }
 
     pub fn interpolate(&self, elevations: &[Elevation], site: &Site2D) -> Option<Elevation> {
-        self.interpolator.interpolate(
-            elevations,
-            naturalneighbor::Point {
-                x: site.x,
-                y: site.y,
-            },
-        )
+        self.interpolator
+            .interpolate(
+                elevations,
+                naturalneighbor::Point {
+                    x: site.x,
+                    y: site.y,
+                },
+            )
+            .unwrap_or(None)
     }
 }
