@@ -33,6 +33,7 @@ pub enum GenerationError {
 /// ### Optional properties
 ///  - `max_iteration` is the maximum number of iterations. If not set, the iterations will be repeated until the elevations of all sites are stable.
 ///
+#[derive(Clone)]
 pub struct TerrainGenerator<S, M, T>
 where
     S: Site,

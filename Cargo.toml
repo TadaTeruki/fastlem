@@ -11,8 +11,8 @@ authors = ["Teruki TADA <tadateruki.public@gmail.com>"]
 [dependencies]
 rtree_rs = "0.1.4"
 voronoice = "0.2.0"
-terrain-graph = "1.0"
-naturalneighbor = "1.2.1"
+terrain-graph = "1.0.1"
+naturalneighbor = "1.2.2"
 rand = "0.8.5"
 thiserror = "1.0"
 

@@ -14,6 +14,7 @@ use super::{interpolator::TerrainInterpolator2D, sites::Site2D, terrain::Terrain
 /// - `areas` is the areas of each site.
 /// - `graph` is the graph representing the conecctions between sites.
 /// - `default_outlets` is the set of indices of sites that are set as outlets by default.
+#[derive(Clone)]
 pub struct TerrainModel2D {
     sites: Vec<Site2D>,
     areas: Vec<Area>,

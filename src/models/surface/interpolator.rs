@@ -2,6 +2,7 @@ use crate::core::units::Elevation;
 
 use super::sites::Site2D;
 
+#[derive(Clone)]
 pub struct TerrainInterpolator2D {
     interpolator: naturalneighbor::Interpolator,
 }
